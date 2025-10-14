@@ -11,26 +11,29 @@ const SelectedMedicationsTable: React.FC<Props> = ({
   setSelectedMedications,
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editValues, setEditValues] = useState<Partial<IMedication>>({});
 
   const handleEdit = (med: IMedication) => {
     setEditingId(med._id || null);
-    setEditValues({ name: med.name, recommendation: med.recommendation });
   };
 
-  const handleSave = (id: string) => {
+  const handleInputChange = (
+    id: string,
+    field: "name" | "recommendation",
+    value: string
+  ) => {
     setSelectedMedications((prev) =>
       prev.map((m) =>
         m._id === id
           ? {
               ...m,
-              name: editValues.name || "",
-              recommendation: editValues.recommendation || "",
+              [field]: value,
             }
           : m
       )
     );
-    localStorage.setItem("lastUpdatedMedicationId", id);
+  };
+
+  const handleFinishEdit = () => {
     setEditingId(null);
   };
 
@@ -63,9 +66,9 @@ const SelectedMedicationsTable: React.FC<Props> = ({
                 {editingId === medication._id ? (
                   <input
                     type="text"
-                    value={editValues.name || ""}
+                    value={medication.name || ""}
                     onChange={(e) =>
-                      setEditValues((v) => ({ ...v, name: e.target.value }))
+                      handleInputChange(medication._id!, "name", e.target.value)
                     }
                     className="w-full border border-green-300 rounded px-1 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-300"
                   />
@@ -82,12 +85,13 @@ const SelectedMedicationsTable: React.FC<Props> = ({
               <td className="px-2 py-1 align-top">
                 {editingId === medication._id ? (
                   <textarea
-                    value={editValues.recommendation || ""}
+                    value={medication.recommendation || ""}
                     onChange={(e) =>
-                      setEditValues((v) => ({
-                        ...v,
-                        recommendation: e.target.value,
-                      }))
+                      handleInputChange(
+                        medication._id!,
+                        "recommendation",
+                        e.target.value
+                      )
                     }
                     rows={2}
                     className="w-full border border-green-300 rounded px-1 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-300 resize-none"
@@ -104,14 +108,17 @@ const SelectedMedicationsTable: React.FC<Props> = ({
 
               <td className="px-2 py-1 align-top space-x-2">
                 {editingId === medication._id ? (
+                  // Кнопка просто виходить з режиму редагування
                   <button
+                    type="button"
                     className="text-blue-600 hover:underline"
-                    onClick={() => handleSave(medication._id!)}
+                    onClick={() => handleFinishEdit()}
                   >
-                    Зберегти
+                    Готово
                   </button>
                 ) : (
                   <button
+                    type="button"
                     className="text-blue-600 hover:underline"
                     onClick={() => handleEdit(medication)}
                   >
@@ -119,6 +126,7 @@ const SelectedMedicationsTable: React.FC<Props> = ({
                   </button>
                 )}
                 <button
+                  type="button"
                   className="text-red-600 hover:underline"
                   onClick={() => handleRemove(medication._id!)}
                 >
