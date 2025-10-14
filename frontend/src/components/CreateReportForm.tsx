@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getPatientById, type IPatient } from "../api/patientsApi";
-import { createReport, getReportByPatientId } from "../api/reportsApi";
+
+import {
+  createReport,
+  getReportByPatientId,
+  updateReport,
+  type IReport,
+} from "../api/reportsApi";
 
 import SearchExam from "./Exams/SearchExam";
 import SelectedExamsTable from "./Exams/SelectedExamsTable";
@@ -15,6 +21,8 @@ export const CreateReportForm: React.FC = () => {
   const { patientId } = useParams();
   const [patient, setPatient] = useState<IPatient | null>(null);
 
+  const [reportId, setReportId] = useState<string | null>(null);
+
   const [selectedExams, setSelectedExams] = useState<IExam[]>([]);
   const [selectedMedications, setSelectedMedications] = useState<IMedication[]>(
     []
@@ -27,19 +35,24 @@ export const CreateReportForm: React.FC = () => {
     const fetchPatientAndReport = async () => {
       try {
         if (!patientId) return;
-
         const [patientData, reportData] = await Promise.all([
           getPatientById(patientId),
-          getReportByPatientId(patientId).catch(() => null),
+          getReportByPatientId(patientId).catch(
+            () => null
+          ) as Promise<IReport | null>,
         ]);
 
         setPatient(patientData);
 
         if (reportData) {
+          if (reportData && reportData._id) {
+            setReportId(reportData._id);
+          }
           setSelectedExams(reportData.exams || []);
           setSelectedMedications(reportData.medications || []);
           setComments(reportData.comments || "");
         } else {
+          setReportId(null);
           setSelectedExams([]);
           setSelectedMedications([]);
           setComments("");
@@ -77,18 +90,25 @@ export const CreateReportForm: React.FC = () => {
     };
 
     try {
-      await createReport(payload);
-      alert("Report saved successfully!");
+      let savedReport;
 
-      const updatedReport = await getReportByPatientId(patientId);
-      if (updatedReport) {
-        setSelectedExams(updatedReport.exams || []);
-        setSelectedMedications(updatedReport.medications || []);
-        setComments(updatedReport.comments || "");
+      if (reportId) {
+        savedReport = await updateReport(reportId, payload);
+        alert("Report updated successfully!");
+      } else {
+        savedReport = await createReport(payload);
+        alert("Report saved successfully!");
+        setReportId(savedReport?._id ?? null);
+      }
+
+      if (savedReport) {
+        setSelectedExams(savedReport.exams || []);
+        setSelectedMedications(savedReport.medications || []);
+        setComments(savedReport.comments || "");
       }
     } catch (error) {
-      console.error("Failed to create report:", error);
-      alert("Failed to create report. Check console for details.");
+      console.error("Failed to save/update report:", error);
+      alert("Failed to save/update report. Check console for details.");
     }
   };
 
@@ -104,7 +124,6 @@ export const CreateReportForm: React.FC = () => {
         Звіт для {patient.fullName}
       </h2>
 
-      {/* === Обстеження === */}
       <div className="mb-4">
         <h3 className="font-medium mb-2 text-green-700">Обстеження</h3>
         <SearchExam
@@ -146,7 +165,7 @@ export const CreateReportForm: React.FC = () => {
         type="submit"
         className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
       >
-        Зберегти звіт
+        {reportId ? "Оновити звіт" : "Створити звіт"}
       </button>
     </form>
   );

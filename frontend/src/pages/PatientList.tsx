@@ -34,7 +34,6 @@ export const PatientList: React.FC = () => {
     }
   };
 
-  // 🔹 debounce на пошук, щоб не робити запит на кожну клавішу
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       fetchPatients();
@@ -149,7 +148,6 @@ export const PatientList: React.FC = () => {
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="relative bg-white rounded-lg p-6 w-full max-w-md">
-            {/* Кнопка закриття ✖ */}
             <button
               onClick={() => setShowModal(false)}
               className="absolute top-2 right-3 text-gray-500 hover:text-black"
