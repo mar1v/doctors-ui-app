@@ -3,13 +3,23 @@ import { useNavigate } from "react-router-dom";
 import * as patientsApi from "../api/patientsApi";
 import { type IPatient } from "../api/patientsApi";
 
+interface IPatientForm extends Omit<Partial<IPatient>, "birthDate"> {
+  birthDate?: string | Date;
+}
+
 export const PatientList: React.FC = () => {
   const [patients, setPatients] = useState<IPatient[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [query, setQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [newPatient, setNewPatient] = useState<Partial<IPatient>>({});
+  const [newPatient, setNewPatient] = useState<IPatientForm>({
+    fullName: "",
+    birthDate: "",
+    phoneNumber: "",
+    email: "",
+    diagnosis: "",
+  });
   const limit = 5;
 
   const navigate = useNavigate();
@@ -24,9 +34,14 @@ export const PatientList: React.FC = () => {
     }
   };
 
+  // 🔹 debounce на пошук, щоб не робити запит на кожну клавішу
   useEffect(() => {
-    fetchPatients();
-  }, [page, query]);
+    const delayDebounce = setTimeout(() => {
+      fetchPatients();
+    }, 500);
+
+    return () => clearTimeout(delayDebounce);
+  }, [query, page]);
 
   const calculateAge = (birthDate: string | Date) => {
     const date = new Date(birthDate);
@@ -36,10 +51,25 @@ export const PatientList: React.FC = () => {
 
   const handleAddPatient = async () => {
     try {
-      await patientsApi.createPatient(newPatient as IPatient);
+      const dataToSend = {
+        ...newPatient,
+        birthDate:
+          typeof newPatient.birthDate === "string" &&
+          /^\d{4}-\d{2}-\d{2}$/.test(newPatient.birthDate)
+            ? new Date(newPatient.birthDate)
+            : undefined,
+      };
+
+      await patientsApi.createPatient(dataToSend as IPatient);
       alert("Пацієнт доданий успішно!");
       setShowModal(false);
-      setNewPatient({});
+      setNewPatient({
+        fullName: "",
+        birthDate: "",
+        phoneNumber: "",
+        email: "",
+        diagnosis: "",
+      });
       fetchPatients();
     } catch (error) {
       console.error(error);
@@ -78,8 +108,7 @@ export const PatientList: React.FC = () => {
                 {p.fullName}
                 <div className="text-sm text-gray-600">
                   Вік: {calculateAge(p.birthDate)} | Діагноз:{" "}
-                  {p.diagnosis || "нема"} | Телефон:
-                  {p.phoneNumber}
+                  {p.diagnosis || "нема"} | Телефон: {p.phoneNumber}
                   <button
                     onClick={() => navigate(`/create-report/${p._id}`)}
                     className="px-3 py-1 border rounded flex gap-2 items-center mt-2"
@@ -119,7 +148,15 @@ export const PatientList: React.FC = () => {
 
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="relative bg-white rounded-lg p-6 w-full max-w-md">
+            {/* Кнопка закриття ✖ */}
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-2 right-3 text-gray-500 hover:text-black"
+            >
+              ✖
+            </button>
+
             <h2 className="text-xl font-semibold mb-4">Додати пацієнта</h2>
             <div className="space-y-2">
               <input
@@ -131,10 +168,9 @@ export const PatientList: React.FC = () => {
                 }
                 className="border p-2 rounded w-full"
               />
+
               <input
-                type="tel"
-                inputMode="numeric"
-                placeholder="YYYY-MM-DD"
+                type="date"
                 value={
                   newPatient.birthDate
                     ? typeof newPatient.birthDate === "string"
@@ -142,22 +178,9 @@ export const PatientList: React.FC = () => {
                       : newPatient.birthDate.toISOString().slice(0, 10)
                     : ""
                 }
-                onChange={(e) => {
-                  let val = e.target.value.replace(/\D/g, "");
-                  if (val.length > 8) val = val.slice(0, 8);
-
-                  if (val.length >= 5)
-                    val = `${val.slice(0, 4)}-${val.slice(4, 6)}-${val.slice(
-                      6
-                    )}`;
-                  else if (val.length >= 3)
-                    val = `${val.slice(0, 4)}-${val.slice(4)}`;
-
-                  setNewPatient({
-                    ...newPatient,
-                    birthDate: val.length === 10 ? new Date(val) : val,
-                  });
-                }}
+                onChange={(e) =>
+                  setNewPatient({ ...newPatient, birthDate: e.target.value })
+                }
                 className="border p-2 rounded w-full"
               />
 
@@ -170,6 +193,7 @@ export const PatientList: React.FC = () => {
                 }
                 className="border p-2 rounded w-full"
               />
+
               <input
                 type="email"
                 placeholder="Email"
@@ -179,6 +203,7 @@ export const PatientList: React.FC = () => {
                 }
                 className="border p-2 rounded w-full"
               />
+
               <input
                 type="text"
                 placeholder="Діагноз"
@@ -189,6 +214,7 @@ export const PatientList: React.FC = () => {
                 className="border p-2 rounded w-full"
               />
             </div>
+
             <div className="flex justify-end gap-2 mt-4">
               <button
                 onClick={() => setShowModal(false)}
