@@ -1,9 +1,9 @@
-import { LoginForm, PatientList } from "../pages";
+import { LoginForm, PatientListPage } from "../pages";
 
 export const routes = [
   {
     path: "/",
-    component: PatientList,
+    component: PatientListPage,
   },
   {
     path: "/login",
