@@ -108,7 +108,6 @@ const SelectedMedicationsTable: React.FC<Props> = ({
 
               <td className="px-2 py-1 align-top space-x-2">
                 {editingId === medication._id ? (
-                  // Кнопка просто виходить з режиму редагування
                   <button
                     type="button"
                     className="text-blue-600 hover:underline"

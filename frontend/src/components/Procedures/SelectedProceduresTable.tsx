@@ -1,19 +1,19 @@
 import React, { useState } from "react";
-import { type IExam } from "../../api/examsApi";
+import type { IProcedure } from "../../api/proceduresApi";
 
 interface Props {
-  selectedExams: IExam[];
-  setSelectedExams: React.Dispatch<React.SetStateAction<IExam[]>>;
+  selectedProcedures: IProcedure[];
+  setSelectedProcedures: React.Dispatch<React.SetStateAction<IProcedure[]>>;
 }
 
-const SelectedExamsTable: React.FC<Props> = ({
-  selectedExams,
-  setSelectedExams,
+const SelectedProceduresTable: React.FC<Props> = ({
+  selectedProcedures,
+  setSelectedProcedures,
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const handleEdit = (exam: IExam) => {
-    setEditingId(exam._id || null);
+  const handleEdit = (procedure: IProcedure) => {
+    setEditingId(procedure._id || null);
   };
 
   const handleInputChange = (
@@ -21,14 +21,14 @@ const SelectedExamsTable: React.FC<Props> = ({
     field: "name" | "recommendation",
     value: string
   ) => {
-    setSelectedExams((prev) =>
-      prev.map((e) =>
-        e._id === id
+    setSelectedProcedures((prev) =>
+      prev.map((p) =>
+        p._id === id
           ? {
-              ...e,
+              ...p,
               [field]: value,
             }
-          : e
+          : p
       )
     );
   };
@@ -38,57 +38,57 @@ const SelectedExamsTable: React.FC<Props> = ({
   };
 
   const handleRemove = (id: string) => {
-    setSelectedExams((prev) => prev.filter((e) => e._id !== id));
+    setSelectedProcedures((prev) => prev.filter((p) => p._id !== id));
   };
 
-  if (selectedExams.length === 0)
+  if (selectedProcedures.length === 0)
     return (
       <p className="text-green-700 text-sm mb-2 mt-3">Нічого не вибрано</p>
     );
 
   return (
-    <div className="overflow-x-auto mb-3 mt-3">
+    <div className="overflow-x-auto mb-3 mt-3 ">
       <table className="min-w-full border border-green-200 rounded-md text-sm">
         <thead className="bg-green-100">
           <tr>
-            <th className="px-2 py-1 text-left">Назва обстеження</th>
+            <th className="px-2 py-1 text-left">Назва процедури</th>
             <th className="px-2 py-1 text-left">Рекомендація</th>
             <th className="px-2 py-1 text-left">Дії</th>
           </tr>
         </thead>
         <tbody>
-          {selectedExams.map((exam) => (
+          {selectedProcedures.map((procedure) => (
             <tr
-              key={exam._id}
+              key={procedure._id}
               className="border-b border-green-200 hover:bg-green-50"
             >
               <td className="px-2 py-1">
-                {editingId === exam._id ? (
+                {editingId === procedure._id ? (
                   <input
                     type="text"
-                    value={exam.name || ""}
+                    value={procedure.name || ""}
                     onChange={(e) =>
-                      handleInputChange(exam._id!, "name", e.target.value)
+                      handleInputChange(procedure._id!, "name", e.target.value)
                     }
                     className="w-full border border-green-300 rounded px-1 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-300"
                   />
                 ) : (
                   <span
                     className="cursor-pointer"
-                    onClick={() => handleEdit(exam)}
+                    onClick={() => handleEdit(procedure)}
                   >
-                    {exam.name}
+                    {procedure.name}
                   </span>
                 )}
               </td>
 
               <td className="px-2 py-1 align-top">
-                {editingId === exam._id ? (
+                {editingId === procedure._id ? (
                   <textarea
-                    value={exam.recommendation || ""}
+                    value={procedure.recommendation || ""}
                     onChange={(e) =>
                       handleInputChange(
-                        exam._id!,
+                        procedure._id!,
                         "recommendation",
                         e.target.value
                       )
@@ -99,15 +99,15 @@ const SelectedExamsTable: React.FC<Props> = ({
                 ) : (
                   <span
                     className="cursor-pointer whitespace-pre-wrap"
-                    onClick={() => handleEdit(exam)}
+                    onClick={() => handleEdit(procedure)}
                   >
-                    {exam.recommendation}
+                    {procedure.recommendation}
                   </span>
                 )}
               </td>
 
               <td className="px-2 py-1 align-top space-x-2">
-                {editingId === exam._id ? (
+                {editingId === procedure._id ? (
                   <button
                     type="button"
                     className="text-blue-600 hover:underline"
@@ -119,7 +119,7 @@ const SelectedExamsTable: React.FC<Props> = ({
                   <button
                     type="button"
                     className="text-blue-600 hover:underline"
-                    onClick={() => handleEdit(exam)}
+                    onClick={() => handleEdit(procedure)}
                   >
                     Оновити
                   </button>
@@ -127,7 +127,7 @@ const SelectedExamsTable: React.FC<Props> = ({
                 <button
                   type="button"
                   className="text-red-600 hover:underline"
-                  onClick={() => handleRemove(exam._id!)}
+                  onClick={() => handleRemove(procedure._id!)}
                 >
                   Видалити
                 </button>
@@ -140,4 +140,4 @@ const SelectedExamsTable: React.FC<Props> = ({
   );
 };
 
-export default SelectedExamsTable;
+export default SelectedProceduresTable;
