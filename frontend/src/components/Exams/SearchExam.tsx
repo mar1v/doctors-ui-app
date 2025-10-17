@@ -42,7 +42,7 @@ const SearchExam: React.FC<Props> = ({ selectedExams, setSelectedExams }) => {
     <div className="mb-2">
       <input
         type="text"
-        placeholder="Пошук..."
+        placeholder="Пошук обстеження"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="w-full px-2 py-1 border border-green-200 rounded-md text-sm focus:ring-1 focus:ring-green-300"

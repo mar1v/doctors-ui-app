@@ -47,7 +47,7 @@ const SearchMedication: React.FC<Props> = ({
     <>
       <input
         type="text"
-        placeholder="Пошук медикаменту"
+        placeholder="Пошук засобу"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="w-full px-2 py-1 border border-green-200 rounded-md text-sm focus:ring-1 focus:ring-green-300"

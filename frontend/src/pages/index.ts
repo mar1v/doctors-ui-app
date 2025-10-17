@@ -1,2 +1,5 @@
-export { LoginForm } from "./LoginForm";
-export { PatientList } from "./PatientList";
+import CreateReportPage from "./CreateReportPage";
+import LoginForm from "./LoginForm";
+import PatientListPage from "./PatientListPage";
+
+export { CreateReportPage, LoginForm, PatientListPage };

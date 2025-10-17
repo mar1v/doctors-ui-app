@@ -1,6 +1,5 @@
 import { Route, Routes } from "react-router-dom";
-import { LoginForm, PatientList } from "../pages";
-import CreateReportForm from "./CreateReportForm";
+import { CreateReportPage, LoginForm, PatientListPage } from "../pages";
 import PrivateRoute from "./PrivateRoute";
 
 interface AppRouterProps {
@@ -20,7 +19,7 @@ export const AppRouter: React.FC<AppRouterProps> = ({ token, onLogin }) => {
         path="/patients"
         element={
           <PrivateRoute token={token}>
-            <PatientList />
+            <PatientListPage />
           </PrivateRoute>
         }
       />
@@ -28,7 +27,7 @@ export const AppRouter: React.FC<AppRouterProps> = ({ token, onLogin }) => {
         path="/create-report/:patientId"
         element={
           <PrivateRoute token={token}>
-            <CreateReportForm />
+            <CreateReportPage />
           </PrivateRoute>
         }
       />
@@ -37,7 +36,7 @@ export const AppRouter: React.FC<AppRouterProps> = ({ token, onLogin }) => {
         path="/"
         element={
           <PrivateRoute token={token}>
-            <PatientList />
+            <PatientListPage />
           </PrivateRoute>
         }
       />
