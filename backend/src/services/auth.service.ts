@@ -18,7 +18,6 @@ export const login = async (email: string, password: string) => {
   if (!user) throw new Error("Неправильний email або пароль");
 
   const match = await user.comparePassword(password);
-
   if (!match) throw new Error("Неправильний email або пароль");
 
   const token = jwt.sign({ email: user.email, id: user._id }, JWT_SECRET, {
@@ -33,4 +32,10 @@ export const login = async (email: string, password: string) => {
       role: user.role,
     },
   };
+};
+
+export const getCurrentUser = async (userId: string) => {
+  const user = await User.findById(userId).select("-password");
+  if (!user) throw new Error("Користувача не знайдено");
+  return user;
 };

@@ -22,7 +22,6 @@ export const registerUser = async (req: Request, res: Response) => {
 
 export const loginUser = async (req: Request, res: Response) => {
   const { email, password } = req.body;
-
   if (!email || !password) {
     return res.status(400).json({ message: "Email і пароль обов'язкові" });
   }
@@ -33,5 +32,19 @@ export const loginUser = async (req: Request, res: Response) => {
   } catch (err) {
     const errorMessage = (err as Error).message || "Помилка входу";
     return res.status(400).json({ message: errorMessage });
+  }
+};
+
+export const getCurrentUser = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    if (!userId) return res.status(401).json({ message: "Неавторизовано" });
+
+    const user = await AuthService.getCurrentUser(userId);
+    res.json({ user });
+  } catch (err) {
+    const errorMessage =
+      (err as Error).message || "Помилка отримання користувача";
+    res.status(400).json({ message: errorMessage });
   }
 };
