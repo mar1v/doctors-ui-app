@@ -1,5 +1,9 @@
 import React, { useState } from "react";
-import { loginUser, registerUser } from "../api/authApi";
+import { loginUser, registerUser } from "../../api/authApi";
+import AuthButton from "./AuthButton";
+import AuthInput from "./AuthInput";
+import AuthMessage from "./AuthMessage";
+import AuthToggle from "./AuthToggle";
 
 interface Props {
   onLogin: (token: string) => void;
@@ -34,37 +38,28 @@ export const LoginForm: React.FC<Props> = ({ onLogin }) => {
         <h2 className="text-2xl font-semibold text-green-900 mb-6 text-center">
           {isRegister ? "Реєстрація" : "Вхід"}
         </h2>
+
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input
+          <AuthInput
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
           />
-          <input
+          <AuthInput
             type="password"
             placeholder="Пароль"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
           />
-          <button
-            type="submit"
-            className="w-full py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-          >
-            {isRegister ? "Зареєструватися" : "Увійти"}
-          </button>
+          <AuthButton text={isRegister ? "Зареєструватися" : "Увійти"} />
         </form>
-        <p
-          className="mt-4 text-blue-600 text-center cursor-pointer hover:underline"
-          onClick={() => setIsRegister(!isRegister)}
-        >
-          {isRegister ? "Вже маєте акаунт?" : "Створити акаунт"}
-        </p>
-        {message && (
-          <p className="mt-3 text-center text-red-500 font-medium">{message}</p>
-        )}
+
+        <AuthToggle
+          isRegister={isRegister}
+          onToggle={() => setIsRegister(!isRegister)}
+        />
+        <AuthMessage message={message} />
       </div>
     </div>
   );

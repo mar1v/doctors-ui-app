@@ -1,4 +1,4 @@
-import { LoginForm, PatientListPage } from "../pages";
+import { LoginPage, PatientListPage } from "../pages";
 
 export const routes = [
   {
@@ -7,6 +7,6 @@ export const routes = [
   },
   {
     path: "/login",
-    component: LoginForm,
+    component: LoginPage,
   },
 ];

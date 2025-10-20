@@ -1,5 +1,13 @@
 import CreateReportPage from "./CreateReportPage";
-import LoginForm from "./LoginForm";
+import ErrorPage from "./ErrorPage";
+import LoginPage from "./LoginPage";
+import NotFoundPage from "./NotFoundPage";
 import PatientListPage from "./PatientListPage";
 
-export { CreateReportPage, LoginForm, PatientListPage };
+export {
+  CreateReportPage,
+  ErrorPage,
+  LoginPage,
+  NotFoundPage,
+  PatientListPage,
+};

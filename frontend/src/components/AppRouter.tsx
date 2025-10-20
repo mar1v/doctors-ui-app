@@ -1,24 +1,21 @@
 import { Route, Routes } from "react-router-dom";
-import { CreateReportPage, LoginForm, PatientListPage } from "../pages";
+import {
+  CreateReportPage,
+  ErrorPage,
+  LoginPage,
+  NotFoundPage,
+  PatientListPage,
+} from "../pages";
 import PrivateRoute from "./PrivateRoute";
 
-interface AppRouterProps {
-  token: string | null;
-  onLogin?: (token: string) => void;
-}
-
-export const AppRouter: React.FC<AppRouterProps> = ({ token, onLogin }) => {
+export const AppRouter: React.FC = () => {
   return (
     <Routes>
-      <Route
-        path="/login"
-        element={<LoginForm onLogin={onLogin || (() => {})} />}
-      />
-
+      <Route path="/login" element={<LoginPage />} />
       <Route
         path="/patients"
         element={
-          <PrivateRoute token={token}>
+          <PrivateRoute>
             <PatientListPage />
           </PrivateRoute>
         }
@@ -26,22 +23,21 @@ export const AppRouter: React.FC<AppRouterProps> = ({ token, onLogin }) => {
       <Route
         path="/create-report/:patientId"
         element={
-          <PrivateRoute token={token}>
+          <PrivateRoute>
             <CreateReportPage />
           </PrivateRoute>
         }
       />
-
       <Route
         path="/"
         element={
-          <PrivateRoute token={token}>
+          <PrivateRoute>
             <PatientListPage />
           </PrivateRoute>
         }
       />
-
-      <Route path="*" element={<h1>404</h1>} />
+      <Route path="/error" element={<ErrorPage />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 };
