@@ -19,9 +19,11 @@
     "jspdf": "^3.0.3",
     "jspdf-autotable": "^5.0.2",
     "jspdf-font": "^1.0.7",
+    "lottie-react": "^2.4.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-hook-form": "^7.63.0",
+    "react-hot-toast": "^2.6.0",
     "react-router-dom": "^7.9.3"
   },
   "devDependencies": {
