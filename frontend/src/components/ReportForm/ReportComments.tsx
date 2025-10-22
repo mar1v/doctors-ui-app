@@ -7,7 +7,7 @@ interface Props {
 
 const ReportComments: React.FC<Props> = ({ comments, setComments }) => (
   <div className="mb-4">
-    <label className="block font-medium mb-1">Коментарі:</label>
+    <label className="block font-medium mb-1">Додаткова інформація:</label>
     <textarea
       value={comments}
       onChange={(e) => setComments(e.target.value)}

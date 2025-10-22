@@ -1,10 +1,11 @@
 import { jsPDF } from "jspdf";
-import autoTable, { type RowInput } from "jspdf-autotable";
 import type { IExam } from "../../../api/examsApi";
+import type { IHomeCare } from "../../../api/homeCaresApi";
 import type { IMedication } from "../../../api/medicationsApi";
 import type { IPatient } from "../../../api/patientsApi";
 import type { IProcedure } from "../../../api/proceduresApi";
 import type { ISpecialist } from "../../../api/specialistsApi";
+import logoUrl from "../../../assets/logo.png";
 import RobotoTTFUrl from "../../../fonts/Roboto-Regular.ttf";
 
 interface GenerateReportPDFParams {
@@ -13,6 +14,7 @@ interface GenerateReportPDFParams {
   medications: IMedication[];
   procedures: IProcedure[];
   specialists: ISpecialist[];
+  homeCares: IHomeCare[];
   comments: string;
 }
 
@@ -22,6 +24,7 @@ export const generateReportPDF = async ({
   medications,
   procedures,
   specialists,
+  homeCares,
   comments,
 }: GenerateReportPDFParams) => {
   const pdf = new jsPDF();
@@ -38,103 +41,111 @@ export const generateReportPDF = async ({
   pdf.addFileToVFS("Roboto-Regular.ttf", base64);
   pdf.addFont("Roboto-Regular.ttf", "Roboto", "normal");
   pdf.setFont("Roboto");
+  pdf.setTextColor(0, 0, 0);
 
-  const primaryColor: [number, number, number] = [34, 197, 94];
-  const textGray: [number, number, number] = [60, 60, 60];
   const pageWidth = pdf.internal.pageSize.getWidth();
+  let y = 20;
 
-  pdf.setFillColor(...primaryColor);
-  pdf.rect(0, 0, pageWidth, 25, "F");
-  pdf.setTextColor(255, 255, 255);
-  pdf.setFontSize(18);
-  pdf.text("Звіт пацієнта", pageWidth / 2, 15, { align: "center" });
-
-  pdf.setTextColor(...textGray);
-  pdf.setFontSize(12);
-  pdf.text(`Пацієнт: ${patient.fullName}`, 14, 35);
-  pdf.text(`Дата: ${new Date().toLocaleDateString()}`, 14, 40);
-
-  const addSection = (title: string, head: string[], body: RowInput[]) => {
-    const prevY = pdf.lastAutoTable?.finalY ?? 55;
-    const startY = prevY + 15;
-    pdf.setFontSize(14);
-    pdf.setTextColor(...primaryColor);
-    pdf.text(title, 14, startY - 3);
-
-    autoTable(pdf, {
-      startY,
-      head: [head],
-      body: body.length
-        ? body.map((row) =>
-            Array.isArray(row) ? row.map((c) => c ?? "—") : [row ?? "—"]
-          )
-        : [head.map(() => "—")],
-      theme: "grid",
-      styles: {
-        font: "Roboto",
-        fontStyle: "normal",
-        fontSize: 11,
-        cellPadding: 3,
-        textColor: [0, 0, 0],
-      },
-      headStyles: {
-        font: "Roboto",
-        fontStyle: "normal",
-        fillColor: primaryColor,
-        textColor: [255, 255, 255],
-        halign: "center",
-        valign: "middle",
-      },
-      alternateRowStyles: { fillColor: [245, 245, 245] },
-      margin: { left: 14, right: 14 },
+  try {
+    const logoRes = await fetch(logoUrl);
+    const logoBlob = await logoRes.blob();
+    const logoBase64 = await new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.readAsDataURL(logoBlob);
     });
+    const logoWidth = 25;
+    const logoHeight = 10;
+    const logoX = (pageWidth - logoWidth) / 2;
+    pdf.addImage(logoBase64, "PNG", logoX, y - 5, logoWidth, logoHeight);
+  } catch {
+    console.log("Не вдалося завантажити логотип для PDF");
+  }
+
+  y += 20;
+
+  pdf.setFontSize(12);
+  pdf.text(`Рекомендаційний лист: ${patient.fullName}`, 14, y);
+  y += 7;
+
+  const drawSeparator = () => {
+    pdf.setDrawColor(180);
+    pdf.line(14, y, pageWidth - 14, y);
+    y += 6;
+  };
+
+  const addSection = (title: string, lines: string[]) => {
+    if (y > 270) {
+      pdf.addPage();
+      y = 20;
+    }
+    drawSeparator();
+    pdf.setFontSize(13);
+    pdf.text(title.toUpperCase(), 14, y);
+    y += 6;
+    pdf.setFontSize(11);
+
+    if (lines.length === 0) lines = ["— відсутні"];
+    lines.forEach((line) => {
+      const split = pdf.splitTextToSize(line, pageWidth - 28);
+      pdf.text(split, 18, y);
+      y += split.length * 6;
+    });
+    y += 4;
   };
 
   addSection(
-    "Процедури",
-    ["Назва", "Рекомендація"],
-    procedures.map((p) => [p.name, p.recommendation])
+    "Рекомендована консультація спеціаліста",
+    specialists.map((s) => `• ${s.name}`)
   );
+
   addSection(
-    "Засоби",
-    ["Назва", "Рекомендація"],
-    medications.map((m) => [m.name, m.recommendation])
+    "Рекомендовані обстеження",
+    exams.map((e) => `• ${e.name}: ${e.recommendation}`)
   );
+
   addSection(
-    "Обстеження",
-    ["Назва", "Рекомендація"],
-    exams.map((e) => [e.name, e.recommendation])
+    "Рекомендовані засоби",
+    medications.map((m) => `• ${m.name}: ${m.recommendation}`)
   );
+
   addSection(
-    "Спеціалісти",
-    ["Ім'я"],
-    specialists.map((s) => [s.name])
+    "Домашній догляд",
+    homeCares.map((h) => {
+      const times = [
+        h.morning ? "ранок" : "",
+        h.day ? "день" : "",
+        h.evening ? "вечір" : "",
+      ]
+        .filter(Boolean)
+        .join(", ");
+      return `• ${h.name}${times ? ` (${times})` : ""}`;
+    })
+  );
+
+  addSection(
+    "Протокол процедур",
+    procedures.map((p) => `• ${p.name}: ${p.recommendation}`)
   );
 
   if (comments.trim()) {
-    const prevY = pdf.lastAutoTable?.finalY ?? 55;
-    const startY = prevY + 15;
-    pdf.setFontSize(14);
-    pdf.setTextColor(...primaryColor);
-    pdf.text("Коментарі", 14, startY);
-    const split = pdf.splitTextToSize(comments, pageWidth - 28);
-    pdf.setFontSize(12);
-    pdf.setTextColor(0, 0, 0);
-    pdf.text(split, 14, startY + 7);
+    addSection("Додаткова інформація", [comments]);
   }
 
   const totalPages = pdf.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     pdf.setPage(i);
-    pdf.setFont("Roboto");
     pdf.setFontSize(10);
-    pdf.setTextColor(120);
     pdf.text(
       `Сторінка ${i} з ${totalPages}`,
-      pageWidth - 30,
+      pageWidth - 32,
       pdf.internal.pageSize.getHeight() - 10
     );
   }
 
-  pdf.save(`Звіт_${patient.fullName?.replace(/\s+/g, "_") ?? "Пацієнт"}.pdf`);
+  pdf.save(
+    `Рекомендаційний лист_${
+      patient.fullName?.replace(/\s+/g, "_") ?? "Пацієнт"
+    }.pdf`
+  );
 };

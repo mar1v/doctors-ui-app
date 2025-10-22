@@ -25,6 +25,9 @@ import ReportActions from "./ReportActions";
 import ReportComments from "./ReportComments";
 import ReportSection from "./ReportSection";
 
+import type { IHomeCare } from "../../api/homeCaresApi";
+import SearchHomeCare from "../HomeCare/SearchHomeCare";
+import SelectedHomeCaresTable from "../HomeCare/SelectedHomeCaresTable";
 import { generateReportPDF } from "./pdf/generateReportPDF";
 
 const CreateReportForm: React.FC = () => {
@@ -42,10 +45,11 @@ const CreateReportForm: React.FC = () => {
   const [selectedSpecialists, setSelectedSpecialists] = useState<ISpecialist[]>(
     []
   );
+  const [selectedHomeCares, setSelectedHomeCares] = useState<IHomeCare[]>([]);
+
   const [comments, setComments] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // === LOAD PATIENT + REPORT ===
   useEffect(() => {
     const fetchPatientAndReport = async () => {
       if (!patientId) return;
@@ -61,6 +65,7 @@ const CreateReportForm: React.FC = () => {
           setSelectedMedications(reportData.medications || []);
           setSelectedProcedures(reportData.procedures || []);
           setSelectedSpecialists(reportData.specialists || []);
+          setSelectedHomeCares(reportData.homeCares || []);
           setComments(reportData.comments || "");
         }
       } catch (err) {
@@ -72,7 +77,6 @@ const CreateReportForm: React.FC = () => {
     fetchPatientAndReport();
   }, [patientId]);
 
-  // === SAVE/UPDATE ===
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!patientId) return alert("Пацієнт не вибраний!");
@@ -95,6 +99,13 @@ const CreateReportForm: React.FC = () => {
         name: s.name,
         query: s.query,
       })),
+      homeCares: selectedHomeCares.map((h) => ({
+        name: h.name,
+        morning: h.morning,
+        day: h.day,
+        evening: h.evening,
+      })),
+
       comments,
     };
 
@@ -188,6 +199,17 @@ const CreateReportForm: React.FC = () => {
           />
         </ReportSection>
 
+        <ReportSection title="Домашній догляд">
+          <SearchHomeCare
+            selectedHomeCares={selectedHomeCares}
+            setSelectedHomeCares={setSelectedHomeCares}
+          />
+          <SelectedHomeCaresTable
+            selectedHomeCares={selectedHomeCares}
+            setSelectedHomeCares={setSelectedHomeCares}
+          />
+        </ReportSection>
+
         <ReportComments comments={comments} setComments={setComments} />
 
         <ReportActions
@@ -200,6 +222,7 @@ const CreateReportForm: React.FC = () => {
               medications: selectedMedications,
               procedures: selectedProcedures,
               specialists: selectedSpecialists,
+              homeCares: selectedHomeCares,
               comments,
             })
           }
