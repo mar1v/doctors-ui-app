@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 
 import Exam from "./models/ExamSchema";
+import HomeCare from "./models/HomeCareSchema";
 import Medication from "./models/MedicationSchema";
 import Patient from "./models/PatientSchema";
 import Procedure from "./models/ProcedureSchema";
@@ -27,9 +28,10 @@ const seed = async () => {
       Medication.deleteMany({}),
       Specialist.deleteMany({}),
       Patient.deleteMany({}),
+      HomeCare.deleteMany({}),
     ]);
 
-    // ---- SEED EXAMS (ІНСТРУМЕНТАЛЬНІ ОБСТЕЖЕННЯ) ----
+    // ---- SEED EXAMS ----
     await Exam.insertMany([
       {
         name: "УЗД щитовидної залози",
@@ -53,7 +55,7 @@ const seed = async () => {
       },
     ]);
 
-    // ---- SEED PROCEDURES (ПРОЦЕДУРИ) ----
+    // ---- SEED PROCEDURES ----
     await Procedure.insertMany([
       {
         name: "IPL (фототерапія)",
@@ -72,7 +74,7 @@ const seed = async () => {
       },
     ]);
 
-    // ---- SEED MEDICATIONS (ПРЕПАРАТИ ТА КОСМЕТИКА) ----
+    // ---- SEED MEDICATIONS ----
     await Medication.insertMany([
       {
         name: "ACA 3D бальзам для губ (15ml)",
@@ -100,6 +102,7 @@ const seed = async () => {
       },
     ]);
 
+    // ---- SEED SPECIALISTS ----
     await Specialist.insertMany([
       { name: "Кардіолог" },
       { name: "Невролог" },
@@ -112,6 +115,41 @@ const seed = async () => {
       { name: "Офтальмолог" },
       { name: "Уролог" },
     ]);
+
+    // ---- SEED HOME CARE (ДОМАШНІЙ ДОГЛЯД) ----
+    await HomeCare.insertMany([
+      {
+        name: "Обличчя",
+        morning: false,
+        day: false,
+        evening: false,
+      },
+      {
+        name: "Тіло",
+        morning: false,
+        day: false,
+        evening: false,
+      },
+      {
+        name: "Шкіра голови, волосся",
+        morning: false,
+        day: false,
+        evening: false,
+      },
+      {
+        name: "Руки",
+        morning: false,
+        day: false,
+        evening: false,
+      },
+      {
+        name: "Ноги",
+        morning: false,
+        day: false,
+        evening: false,
+      },
+    ]);
+    console.log("🧴 Inserted home care recommendations");
 
     // ---- SEED PATIENTS ----
     const patients = [
@@ -186,11 +224,10 @@ const seed = async () => {
         diagnosis: "Артрит",
       },
     ];
-
     const repeatedPatients = Array.from({ length: 3 }, () => patients).flat();
 
     await Patient.insertMany(repeatedPatients);
-    console.log(`✅ Inserted ${repeatedPatients.length} patients`);
+    console.log(`👩‍⚕️ Inserted ${repeatedPatients.length} patients`);
 
     console.log("🎉 Database seeded successfully!");
     await mongoose.disconnect();

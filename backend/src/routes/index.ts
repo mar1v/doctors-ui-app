@@ -1,6 +1,7 @@
 import { Router } from "express";
 import authRoutes from "./auth.routes";
 import examsRoutes from "./exams.routes";
+import homeCareRoutes from "./homeCareRoutes";
 import medicationsRoutes from "./medications.routes";
 import patientRoutes from "./patient.routes";
 import proceduresRoutes from "./procedures.routes";
@@ -16,5 +17,6 @@ router.use("/reports", reportsRoutes);
 router.use("/specialists", specialistsRoutes);
 router.use("/auth", authRoutes);
 router.use("/patients", patientRoutes);
+router.use("/home-cares", homeCareRoutes);
 
 export default router;

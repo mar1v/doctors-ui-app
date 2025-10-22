@@ -6,6 +6,12 @@ export interface IReport extends Document {
   procedures: { name: string; recommendation: string }[];
   exams: { name: string; recommendation: string }[];
   specialists: { name: string }[];
+  homeCares: {
+    name: string;
+    morning: boolean;
+    day: boolean;
+    evening: boolean;
+  }[];
   psychoScale?: number;
   comments?: string;
   createdAt?: Date;
@@ -17,6 +23,14 @@ const ReportSchema = new Schema<IReport>({
   procedures: [{ name: String, recommendation: String }],
   exams: [{ name: String, recommendation: String }],
   specialists: [{ name: String }],
+  homeCares: [
+    {
+      name: String,
+      morning: Boolean,
+      day: Boolean,
+      evening: Boolean,
+    },
+  ],
   psychoScale: Number,
   comments: String,
   createdAt: { type: Date, default: Date.now },
