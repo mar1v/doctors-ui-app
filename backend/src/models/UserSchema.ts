@@ -8,11 +8,14 @@ export interface IUser extends Document {
   comparePassword: (candidate: string) => Promise<boolean>;
 }
 
-const UserSchema: Schema<IUser> = new Schema({
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  role: { type: String, default: "user" },
-});
+const UserSchema: Schema<IUser> = new Schema(
+  {
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    role: { type: String, default: "user" },
+  },
+  { timestamps: true } // 🕒 додає createdAt та updatedAt
+);
 
 UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();

@@ -16,6 +16,7 @@ export const getAllPatients = async (
 
     const total = await PatientService.count(filter);
     const patients = await PatientService.getAll(filter)
+      .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
 
