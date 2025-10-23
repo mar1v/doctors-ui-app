@@ -20,10 +20,19 @@ export const loginUser = async (req: Request, res: Response) => {
     return res.status(400).json({ message: "Email і пароль обов'язкові" });
 
   try {
-    const { accessToken, refreshToken, cookieOptions, user } =
-      await AuthService.login(email, password, rememberMe);
+    const { accessToken, refreshToken, user } = await AuthService.login(
+      email,
+      password,
+      rememberMe
+    );
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      path: "/",
+      maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000,
+    });
 
-    res.cookie("refreshToken", refreshToken, cookieOptions);
     res.json({ accessToken, user });
   } catch (err) {
     res.status(400).json({ message: (err as Error).message });
@@ -45,8 +54,9 @@ export const refreshToken = async (req: Request, res: Response) => {
 export const logoutUser = async (_req: Request, res: Response) => {
   res.clearCookie("refreshToken", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    secure: true,
+    sameSite: "none",
+    path: "/",
   });
   res.json({ message: "Вихід виконано" });
 };
