@@ -7,7 +7,7 @@ interface Props {
 
 const ReportSection: React.FC<Props> = ({ title, children }) => (
   <div className="mb-4">
-    <h3 className="font-semibold mb-2 text-green-600">{title}</h3>
+    <h3 className="font-semibold mb-2">{title}</h3>
     {children}
   </div>
 );

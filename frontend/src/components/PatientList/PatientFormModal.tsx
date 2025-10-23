@@ -1,15 +1,11 @@
 import React, { useEffect, useState } from "react";
 import type { IPatient } from "../../api/patientsApi";
 
-export interface IPatientForm extends Omit<Partial<IPatient>, "birthDate"> {
-  birthDate?: string | Date;
-}
-
 interface Props {
   visible: boolean;
   onClose: () => void;
-  onSave: (patient: IPatientForm) => void;
-  patient?: IPatientForm;
+  onSave: (patient: IPatient) => void;
+  patient?: IPatient;
 }
 
 export const PatientFormModal: React.FC<Props> = ({
@@ -18,15 +14,7 @@ export const PatientFormModal: React.FC<Props> = ({
   onSave,
   patient,
 }) => {
-  const [form, setForm] = useState<IPatientForm>(
-    patient || {
-      fullName: "",
-      birthDate: "",
-      phoneNumber: "",
-      email: "",
-      diagnosis: "",
-    }
-  );
+  const [form, setForm] = useState<IPatient>(patient || { fullName: "" });
 
   useEffect(() => {
     if (patient) setForm(patient);
@@ -34,59 +22,48 @@ export const PatientFormModal: React.FC<Props> = ({
 
   if (!visible) return null;
 
+  const handleSave = () => {
+    if (!form.fullName.trim()) {
+      alert("Введіть ПІБ пацієнта!");
+      return;
+    }
+    onSave(form);
+  };
+
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white rounded-lg p-6 w-full max-w-md">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
+      <div className="relative bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
         <button
           onClick={onClose}
-          className="absolute top-2 right-3 text-gray-500 hover:text-black"
+          className="absolute top-2 right-3 text-gray-500 hover:text-black text-lg"
         >
-          ✖
+          ✕
         </button>
-        <h2 className="text-xl font-semibold mb-4">Додати пацієнта</h2>
-        <div className="space-y-2">
-          {["fullName", "birthDate", "phoneNumber", "email", "diagnosis"].map(
-            (field) => (
-              <input
-                key={field}
-                type={
-                  field === "birthDate"
-                    ? "date"
-                    : field === "email"
-                    ? "email"
-                    : "text"
-                }
-                placeholder={
-                  field === "fullName"
-                    ? "ПІБ"
-                    : field === "birthDate"
-                    ? "Дата народження"
-                    : field === "phoneNumber"
-                    ? "Телефон"
-                    : field === "email"
-                    ? "Email"
-                    : "Діагноз"
-                }
-                value={
-                  form[field as keyof IPatientForm]
-                    ? field === "birthDate" && form.birthDate instanceof Date
-                      ? form.birthDate.toISOString().slice(0, 10)
-                      : (form[field as keyof IPatientForm] as string)
-                    : ""
-                }
-                onChange={(e) => setForm({ ...form, [field]: e.target.value })}
-                className="border p-2 rounded w-full"
-              />
-            )
-          )}
+
+        <h2 className="text-2xl font-semibold text-center text-green-800 mb-6">
+          Створити карту пацієнта
+        </h2>
+
+        <div className="space-y-4">
+          <input
+            type="text"
+            value={form.fullName}
+            onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+            placeholder="ПІБ пацієнта"
+            className="border border-green-300 focus:ring-2 focus:ring-green-200 focus:outline-none p-2 rounded-lg w-full text-gray-800"
+          />
         </div>
-        <div className="flex justify-end gap-2 mt-4">
-          <button onClick={onClose} className="px-3 py-1 border rounded">
+
+        <div className="flex justify-end gap-3 mt-6">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
+          >
             Скасувати
           </button>
           <button
-            onClick={() => onSave(form)}
-            className="px-3 py-1 bg-blue-500 text-white rounded"
+            onClick={handleSave}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
           >
             Зберегти
           </button>

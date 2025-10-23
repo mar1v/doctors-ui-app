@@ -4,13 +4,13 @@ import LoginForm from "../components/Auth/LoginForm";
 import { useAuth } from "../hooks/useAuth";
 
 const LoginPage: React.FC = () => {
-  const { login, token } = useAuth();
+  const { token } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (token) navigate("/patients");
   }, [token, navigate]);
-  return <LoginForm onLogin={login} />;
+  return <LoginForm />;
 };
 
 export default LoginPage;

@@ -1,19 +1,18 @@
 import Lottie from "lottie-react";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import toast from "react-hot-toast";
 import { loginUser, registerUser } from "../../api/authApi";
 import greenLogo from "../../assets/green.json";
+import { AuthContext } from "../../context/AuthContext";
 import AuthButton from "./AuthButton";
 import AuthInput from "./AuthInput";
 import AuthToggle from "./AuthToggle";
 
-interface Props {
-  onLogin: (token: string) => void;
-}
-
-const LoginForm: React.FC<Props> = ({ onLogin }) => {
+const LoginForm: React.FC = () => {
+  const { login } = useContext(AuthContext)!;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
 
   const validateForm = () => {
@@ -43,20 +42,20 @@ const LoginForm: React.FC<Props> = ({ onLogin }) => {
         toast.success("Реєстрація успішна! Тепер увійдіть.");
         setIsRegister(false);
       } else {
-        const { token } = await loginUser(email, password);
+        const { accessToken } = await loginUser(email, password, rememberMe);
+        login(accessToken);
         toast.success("Вхід виконано успішно!");
-        onLogin(token);
       }
     } catch (err) {
-      console.error("handleSubmit error:", err);
       toast.error("Помилка входу або реєстрації");
+      console.error(err);
     }
   };
 
   return (
     <div className="w-screen h-screen flex items-center justify-center bg-green-50">
       <div className="flex flex-col md:flex-row w-full max-w-[1200px] h-full md:h-[90vh] rounded-2xl overflow-hidden shadow-2xl bg-white">
-        <div className="flex-[2] flex items-center justify-center bg-green-100 p-8 md:p-12 relative">
+        <div className="flex-[2] flex items-center justify-center bg-green-100 p-8 md:p-12">
           <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-[400px] md:h-[400px] xl:w-[500px] xl:h-[500px]">
             <Lottie animationData={greenLogo} loop={false} autoplay={true} />
           </div>
@@ -81,6 +80,18 @@ const LoginForm: React.FC<Props> = ({ onLogin }) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+
+              <div className="flex items-center justify-between text-sm">
+                <label className="flex items-center text-gray-600">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="mr-2 accent-green-600"
+                  />
+                  Запам’ятати мене
+                </label>
+              </div>
 
               <AuthButton text={isRegister ? "Зареєструватися" : "Увійти"} />
             </form>

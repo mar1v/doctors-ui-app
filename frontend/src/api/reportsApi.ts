@@ -7,6 +7,12 @@ export interface IReport {
   procedures: { name: string; recommendation: string }[];
   specialists: { name: string }[];
   exams: { name: string; recommendation: string }[];
+  homeCares: {
+    name: string;
+    morning: boolean;
+    day: boolean;
+    evening: boolean;
+  }[];
   psychoScale?: number;
   comments?: string;
   createdAt?: string;
