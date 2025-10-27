@@ -1,5 +1,5 @@
+import type { ISpecialist } from "#api/specialistsApi";
 import React, { useState } from "react";
-import type { ISpecialist } from "../../api/specialistsApi";
 
 interface Props {
   selectedSpecialists: ISpecialist[];

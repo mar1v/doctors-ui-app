@@ -10,10 +10,9 @@ export interface IReport {
   homeCares: {
     name: string;
     morning: boolean;
-    day: boolean;
     evening: boolean;
   }[];
-  psychoScale?: number;
+  additionalInfo?: string;
   comments?: string;
   createdAt?: string;
 }

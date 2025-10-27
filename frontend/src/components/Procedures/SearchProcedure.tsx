@@ -1,8 +1,5 @@
+import { searchProceduresByName, type IProcedure } from "#api/proceduresApi";
 import { useEffect, useState } from "react";
-import {
-  searchProceduresByName,
-  type IProcedure,
-} from "../../api/proceduresApi";
 
 interface Props {
   selectedProcedures: IProcedure[];

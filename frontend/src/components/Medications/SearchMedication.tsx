@@ -1,8 +1,5 @@
+import { searchMedicationsByName, type IMedication } from "#api/medicationsApi";
 import { useEffect, useState } from "react";
-import {
-  searchMedicationsByName,
-  type IMedication,
-} from "../../api/medicationsApi";
 
 interface Props {
   medication: IMedication[];

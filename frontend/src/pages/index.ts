@@ -1,8 +1,8 @@
-import CreateReportPage from "./CreateReportPage";
-import ErrorPage from "./ErrorPage";
-import LoginPage from "./LoginPage";
-import NotFoundPage from "./NotFoundPage";
-import PatientListPage from "./PatientListPage";
+import CreateReportPage from "#pages/CreateReportPage";
+import ErrorPage from "#pages/ErrorPage";
+import LoginPage from "#pages/LoginPage";
+import NotFoundPage from "#pages/NotFoundPage";
+import PatientListPage from "#pages/PatientListPage";
 
 export {
   CreateReportPage,

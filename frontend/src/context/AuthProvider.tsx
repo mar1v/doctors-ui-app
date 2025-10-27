@@ -1,7 +1,7 @@
+import { logoutUser, refreshToken } from "#api/authApi";
+import { AuthContext } from "#context/AuthContext";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { logoutUser, refreshToken } from "../api/authApi";
-import { AuthContext } from "./AuthContext";
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -29,9 +29,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         const { accessToken } = await refreshToken();
         login(accessToken);
-        console.log("Токен оновлено через cookie");
       } catch {
-        console.warn("Не вдалося оновити токен");
         logout();
       }
     };

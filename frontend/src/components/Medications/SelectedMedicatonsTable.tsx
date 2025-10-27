@@ -1,5 +1,5 @@
+import type { IMedication } from "#api/medicationsApi";
 import React, { useState } from "react";
-import type { IMedication } from "../../api/medicationsApi";
 
 interface Props {
   selectedMedications: IMedication[];

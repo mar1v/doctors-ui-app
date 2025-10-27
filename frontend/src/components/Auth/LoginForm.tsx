@@ -1,12 +1,12 @@
+import { loginUser, registerUser } from "#api/authApi";
+import greenLogo from "#assets/green.json";
+import AuthButton from "#components/Auth/AuthButton";
+import AuthInput from "#components/Auth/AuthInput";
+import AuthToggle from "#components/Auth/AuthToggle";
+import { AuthContext } from "#context/AuthContext";
 import Lottie from "lottie-react";
 import React, { useContext, useState } from "react";
 import toast from "react-hot-toast";
-import { loginUser, registerUser } from "../../api/authApi";
-import greenLogo from "../../assets/green.json";
-import { AuthContext } from "../../context/AuthContext";
-import AuthButton from "./AuthButton";
-import AuthInput from "./AuthInput";
-import AuthToggle from "./AuthToggle";
 
 const LoginForm: React.FC = () => {
   const { login } = useContext(AuthContext)!;

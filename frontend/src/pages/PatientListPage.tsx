@@ -1,5 +1,5 @@
+import PatientList from "#components/PatientList/PatientList";
 import React from "react";
-import PatientList from "../components/PatientList/PatientList";
 
 const PatientListPage: React.FC = () => {
   return <PatientList />;

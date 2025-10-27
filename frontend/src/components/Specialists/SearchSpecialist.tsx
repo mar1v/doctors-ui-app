@@ -1,8 +1,5 @@
+import { searchSpecialistsByName, type ISpecialist } from "#api/specialistsApi";
 import { useEffect, useState } from "react";
-import {
-  searchSpecialistsByName,
-  type ISpecialist,
-} from "../../api/specialistsApi";
 
 interface Props {
   selectedSpecialists: ISpecialist[];
@@ -63,7 +60,6 @@ const SearchSpecialist: React.FC<Props> = ({
             <thead className="bg-green-100">
               <tr>
                 <th className="px-2 py-1 text-left">Ім’я</th>
-                <th className="px-2 py-1 text-left">Запит</th>
                 <th className="px-2 py-1 text-left">Дії</th>
               </tr>
             </thead>
@@ -71,7 +67,7 @@ const SearchSpecialist: React.FC<Props> = ({
               {results.map((specialist) => (
                 <tr key={specialist._id}>
                   <td className="px-2 py-1">{specialist.name}</td>
-                  <td className="px-2 py-1">{specialist.query || "-"}</td>
+
                   <td className="px-2 py-1">
                     <button
                       onClick={() => addSpecialist(specialist)}

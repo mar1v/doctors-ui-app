@@ -1,5 +1,5 @@
+import { searchHomeCaresByName, type IHomeCare } from "#api/homeCaresApi";
 import { useEffect, useState } from "react";
-import { searchHomeCaresByName, type IHomeCare } from "../../api/homeCaresApi";
 
 interface Props {
   selectedHomeCares: IHomeCare[];
@@ -49,35 +49,38 @@ const SearchHomeCare: React.FC<Props> = ({
         onChange={(e) => setSearch(e.target.value)}
         className="w-full px-2 py-1 border border-green-200 rounded-md text-sm focus:ring-1 focus:ring-green-300"
       />
+
       {loading && (
-        <p className="text-green-700 text-sm mb-2">Завантаження...</p>
+        <p className="text-green-700 text-sm mt-1 mb-2">Завантаження...</p>
       )}
+
       {results.length > 0 && !loading && (
         <div className="overflow-x-auto mb-3 mt-2">
-          <table className="min-w-full border border-green-200 rounded-md text-sm">
+          <table className="min-w-full border border-green-200 rounded-md text-sm text-center">
             <thead className="bg-green-100">
               <tr>
-                <th className="px-2 py-1 text-left">Назва</th>
-                <th className="px-2 py-1 text-left">Ранок</th>
-                <th className="px-2 py-1 text-left">День</th>
-                <th className="px-2 py-1 text-left">Вечір</th>
-                <th className="px-2 py-1 text-left">Дії</th>
+                <th className="px-3 py-1 border-b border-green-200 text-left">
+                  Назва
+                </th>
+                <th className="px-3 py-1 border-b border-green-200">Ранок</th>
+                <th className="px-3 py-1 border-b border-green-200">Вечір</th>
+                <th className="px-3 py-1 border-b border-green-200">Дії</th>
               </tr>
             </thead>
+
             <tbody>
               {results.map((h) => (
                 <tr key={h._id}>
-                  <td className="px-2 py-1">{h.name}</td>
-                  <td className="px-2 py-1 text-center">
-                    {h.morning ? "☑️" : "—"}
+                  <td className="px-3 py-1 text-left border-t border-green-100">
+                    {h.name}
                   </td>
-                  <td className="px-2 py-1 text-center">
-                    {h.day ? "☑️" : "—"}
+                  <td className="px-3 py-1 border-t border-green-100">
+                    {h.morning ? "✓" : "–"}
                   </td>
-                  <td className="px-2 py-1 text-center">
-                    {h.evening ? "☑️" : "—"}
+                  <td className="px-3 py-1 border-t border-green-100">
+                    {h.evening ? "✓" : "–"}
                   </td>
-                  <td className="px-2 py-1">
+                  <td className="px-3 py-1 border-t border-green-100">
                     <button
                       onClick={() => addHomeCare(h)}
                       className="text-green-500 hover:text-green-700"

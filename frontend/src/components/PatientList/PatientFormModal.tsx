@@ -1,5 +1,5 @@
+import type { IPatient } from "#api/patientsApi";
 import React, { useEffect, useState } from "react";
-import type { IPatient } from "../../api/patientsApi";
 
 interface Props {
   visible: boolean;

@@ -1,8 +1,8 @@
+import type { IPatient } from "#api/patientsApi";
+import { getReportByPatientId } from "#api/reportsApi";
+import { generateReportPDF } from "#components/ReportForm/pdf/generateReportPDF";
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import type { IPatient } from "../../api/patientsApi";
-import { getReportByPatientId } from "../../api/reportsApi";
-import { generateReportPDF } from "../ReportForm/pdf/generateReportPDF";
 
 const PatientItem: React.FC<{ patient: IPatient }> = ({ patient }) => {
   const navigate = useNavigate();

@@ -1,5 +1,5 @@
+import type { IPatient } from "#api/patientsApi";
 import React from "react";
-import type { IPatient } from "../../api/patientsApi";
 
 interface Props {
   reportId: string | null;

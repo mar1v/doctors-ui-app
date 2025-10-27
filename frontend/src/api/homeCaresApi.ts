@@ -6,7 +6,6 @@ export interface IHomeCare {
   _id?: string;
   name: string;
   morning: boolean;
-  day: boolean;
   evening: boolean;
 }
 

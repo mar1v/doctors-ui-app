@@ -1,5 +1,5 @@
+import type { IHomeCare } from "#api/homeCaresApi";
 import React, { useState } from "react";
-import type { IHomeCare } from "../../api/homeCaresApi";
 
 interface Props {
   selectedHomeCares: IHomeCare[];
@@ -52,7 +52,6 @@ const SelectedHomeCaresTable: React.FC<Props> = ({
           <tr>
             <th className="px-2 py-1 text-left">Назва</th>
             <th className="px-2 py-1 text-center">Ранок</th>
-            <th className="px-2 py-1 text-center">День</th>
             <th className="px-2 py-1 text-center">Вечір</th>
             <th className="px-2 py-1 text-center">Дії</th>
           </tr>
@@ -83,17 +82,15 @@ const SelectedHomeCaresTable: React.FC<Props> = ({
                 )}
               </td>
 
-              {(["morning", "day", "evening"] as (keyof IHomeCare)[]).map(
-                (key) => (
-                  <td key={key} className="text-center border p-1">
-                    <input
-                      type="checkbox"
-                      checked={!!h[key]}
-                      onChange={() => toggle(i, key)}
-                    />
-                  </td>
-                )
-              )}
+              {(["morning", "evening"] as (keyof IHomeCare)[]).map((key) => (
+                <td key={key} className="text-center p-1">
+                  <input
+                    type="checkbox"
+                    checked={!!h[key]}
+                    onChange={() => toggle(i, key)}
+                  />
+                </td>
+              ))}
               <td className="px-2 py-1 text-center">
                 {editingId === h._id ? (
                   <button

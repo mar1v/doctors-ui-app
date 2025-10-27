@@ -1,12 +1,12 @@
-import { Route, Routes } from "react-router-dom";
 import {
   CreateReportPage,
   ErrorPage,
   LoginPage,
   NotFoundPage,
   PatientListPage,
-} from "../pages";
-import PrivateRoute from "./PrivateRoute";
+} from "#pages/index";
+import PrivateRoute from "#router/PrivateRoute";
+import { Route, Routes } from "react-router-dom";
 
 export const AppRouter: React.FC = () => {
   return (

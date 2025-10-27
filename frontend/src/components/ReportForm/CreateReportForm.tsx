@@ -1,34 +1,34 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { getPatientById, type IPatient } from "../../api/patientsApi";
+import { getPatientById, type IPatient } from "#api/patientsApi";
 import {
   createReport,
   getReportByPatientId,
   updateReport,
-} from "../../api/reportsApi";
+} from "#api/reportsApi";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
-import SearchExam from "../Exams/SearchExam";
-import SelectedExamsTable from "../Exams/SelectedExamsTable";
-import SearchHomeCare from "../HomeCare/SearchHomeCare";
-import SelectedHomeCaresTable from "../HomeCare/SelectedHomeCaresTable";
-import SearchMedication from "../Medications/SearchMedication";
-import SelectedMedicationsTable from "../Medications/SelectedMedicatonsTable";
-import SearchProcedure from "../Procedures/SearchProcedure";
-import SelectedProceduresTable from "../Procedures/SelectedProceduresTable";
-import SearchSpecialist from "../Specialists/SearchSpecialist";
-import SelectedSpecialistsTable from "../Specialists/SelectedSpecialistsTable";
+import SearchExam from "#components/Exams/SearchExam";
+import SelectedExamsTable from "#components/Exams/SelectedExamsTable";
+import SearchHomeCare from "#components/HomeCare/SearchHomeCare";
+import SelectedHomeCaresTable from "#components/HomeCare/SelectedHomeCaresTable";
+import SearchMedication from "#components/Medications/SearchMedication";
+import SelectedMedicationsTable from "#components/Medications/SelectedMedicatonsTable";
+import SearchProcedure from "#components/Procedures/SearchProcedure";
+import SelectedProceduresTable from "#components/Procedures/SelectedProceduresTable";
+import SearchSpecialist from "#components/Specialists/SearchSpecialist";
+import SelectedSpecialistsTable from "#components/Specialists/SelectedSpecialistsTable";
 
-import type { IExam } from "../../api/examsApi";
-import type { IHomeCare } from "../../api/homeCaresApi";
-import type { IMedication } from "../../api/medicationsApi";
-import type { IProcedure } from "../../api/proceduresApi";
-import type { ISpecialist } from "../../api/specialistsApi";
+import type { IExam } from "#api/examsApi";
+import type { IHomeCare } from "#api/homeCaresApi";
+import type { IMedication } from "#api/medicationsApi";
+import type { IProcedure } from "#api/proceduresApi";
+import type { ISpecialist } from "#api/specialistsApi";
 
+import { generateReportPDF } from "#components/ReportForm/pdf/generateReportPDF";
+import ReportActions from "#components/ReportForm/ReportActions";
+import ReportComments from "#components/ReportForm/ReportComments";
+import ReportSection from "#components/ReportForm/ReportSection";
 import toast from "react-hot-toast";
-import { generateReportPDF } from "./pdf/generateReportPDF";
-import ReportActions from "./ReportActions";
-import ReportComments from "./ReportComments";
-import ReportSection from "./ReportSection";
 
 const CreateReportForm: React.FC = () => {
   const { patientId } = useParams();
@@ -46,8 +46,11 @@ const CreateReportForm: React.FC = () => {
     []
   );
   const [selectedHomeCares, setSelectedHomeCares] = useState<IHomeCare[]>([]);
+
   const [comments, setComments] = useState("");
   const [loading, setLoading] = useState(true);
+
+  const [additionalInfo, setAdditionalInfo] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -58,6 +61,7 @@ const CreateReportForm: React.FC = () => {
           getReportByPatientId(patientId).catch(() => null),
         ]);
         setPatient(patientData);
+
         if (reportData) {
           setReportId(reportData._id ?? null);
           setSelectedExams(reportData.exams ?? []);
@@ -65,7 +69,10 @@ const CreateReportForm: React.FC = () => {
           setSelectedProcedures(reportData.procedures ?? []);
           setSelectedSpecialists(reportData.specialists ?? []);
           setSelectedHomeCares(reportData.homeCares ?? []);
+          setAdditionalInfo(reportData.additionalInfo ?? "");
           setComments(reportData.comments ?? "");
+
+          setAdditionalInfo(reportData.additionalInfo ?? "");
         }
       } catch (error) {
         console.error("Error fetching report:", error);
@@ -101,10 +108,10 @@ const CreateReportForm: React.FC = () => {
       homeCares: selectedHomeCares.map((h) => ({
         name: h.name,
         morning: h.morning,
-        day: h.day,
         evening: h.evening,
       })),
       comments,
+      additionalInfo,
     };
 
     try {
@@ -206,6 +213,16 @@ const CreateReportForm: React.FC = () => {
                 />
               </ReportSection>
 
+              <ReportSection title="Все, що необхідно знати про ваш стан">
+                <textarea
+                  value={additionalInfo}
+                  onChange={(e) => setAdditionalInfo(e.target.value)}
+                  placeholder="Необхідна інформація"
+                  className="w-full border border-green-200 rounded-md text-sm p-2 resize-none focus:ring-1 focus:ring-green-400 focus:outline-none"
+                  rows={4}
+                />
+              </ReportSection>
+
               <ReportComments comments={comments} setComments={setComments} />
 
               <ReportActions
@@ -220,6 +237,7 @@ const CreateReportForm: React.FC = () => {
                     specialists: selectedSpecialists,
                     homeCares: selectedHomeCares,
                     comments,
+                    additionalInfo,
                   })
                 }
               />

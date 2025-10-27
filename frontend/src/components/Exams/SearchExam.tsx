@@ -1,5 +1,5 @@
+import { searchExamsByName, type IExam } from "#api/examsApi";
 import React, { useEffect, useState } from "react";
-import { searchExamsByName, type IExam } from "../../api/examsApi";
 
 interface Props {
   exams: IExam[];

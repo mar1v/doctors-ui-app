@@ -1,5 +1,5 @@
+import type { IProcedure } from "#api/proceduresApi";
 import React, { useState } from "react";
-import type { IProcedure } from "../../api/proceduresApi";
 
 interface Props {
   selectedProcedures: IProcedure[];

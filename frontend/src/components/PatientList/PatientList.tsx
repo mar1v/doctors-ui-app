@@ -1,8 +1,8 @@
+import type { IPatient } from "#api/patientsApi";
+import * as patientsApi from "#api/patientsApi";
+import PatientFormModal from "#components/PatientList/PatientFormModal";
+import PatientItem from "#components/PatientList/PatientItem";
 import React, { useCallback, useEffect, useState } from "react";
-import type { IPatient } from "../../api/patientsApi";
-import * as patientsApi from "../../api/patientsApi";
-import PatientFormModal from "./PatientFormModal";
-import PatientItem from "./PatientItem";
 
 const PatientList: React.FC = () => {
   const [patients, setPatients] = useState<IPatient[]>([]);

@@ -1,5 +1,5 @@
+import { type IExam } from "#api/examsApi";
 import React, { useState } from "react";
-import { type IExam } from "../../api/examsApi";
 
 interface Props {
   selectedExams: IExam[];
