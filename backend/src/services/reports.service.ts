@@ -1,4 +1,5 @@
 import Exam from "../models/ExamSchema";
+import HomeCare from "../models/HomeCareSchema";
 import Medication from "../models/MedicationSchema";
 import Procedure from "../models/ProcedureSchema";
 import Report, { IReport } from "../models/ReportSchema";
@@ -24,6 +25,12 @@ export const create = async (data: IReport) => {
     name: { $in: extractNames(data.specialists) },
   });
 
+  const homeCares = data.homeCares
+    ? await HomeCare.find({
+        name: { $in: extractNames(data.homeCares) },
+      })
+    : [];
+
   const reportData = {
     patient: data.patient,
     medications: medications.map((m) => ({
@@ -39,7 +46,12 @@ export const create = async (data: IReport) => {
       recommendation: e.recommendation,
     })),
     specialists: specialists.map((s) => ({ name: s.name })),
-    psychoScale: data.psychoScale,
+    homeCares: homeCares.map((h) => ({
+      name: h.name,
+      morning: h.morning,
+      evening: h.evening,
+    })),
+    additionalInfo: data.additionalInfo,
     comments: data.comments,
   };
 

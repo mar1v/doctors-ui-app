@@ -9,7 +9,6 @@ export const getAllHomeCaresService = async (search?: string) => {
 export const createHomeCareService = async (data: {
   name: string;
   morning?: boolean;
-  day?: boolean;
   evening?: boolean;
 }) => {
   return await HomeCare.create(data);

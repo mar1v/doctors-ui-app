@@ -1,4 +1,3 @@
-// controllers/reports.controller.ts
 import { NextFunction, Request, Response } from "express";
 import * as ReportService from "../services/reports.service";
 import ApiError from "../utils/ApiError";
