@@ -1,8 +1,8 @@
+import mongoose from "mongoose";
 import Exam from "../models/ExamSchema";
-import HomeCare from "../models/HomeCareSchema";
 import Medication from "../models/MedicationSchema";
 import Procedure from "../models/ProcedureSchema";
-import Report, { IReport } from "../models/ReportSchema";
+import Report, { IReport, IReportHomeCare } from "../models/ReportSchema";
 import Specialist from "../models/SpecialistSchema";
 
 export const create = async (data: IReport) => {
@@ -25,13 +25,16 @@ export const create = async (data: IReport) => {
     name: { $in: extractNames(data.specialists) },
   });
 
-  const homeCares = data.homeCares
-    ? await HomeCare.find({
-        name: { $in: extractNames(data.homeCares) },
-      })
-    : [];
+  const homeCaresData: IReportHomeCare[] =
+    data.homeCares?.map((h) => ({
+      _id: h._id || new mongoose.Types.ObjectId().toString(),
+      name: h.name,
+      morning: h.morning,
+      evening: h.evening,
+      medicationName: h.medicationName || "",
+    })) ?? [];
 
-  const reportData = {
+  const reportData: IReport = {
     patient: data.patient,
     medications: medications.map((m) => ({
       name: m.name,
@@ -46,29 +49,17 @@ export const create = async (data: IReport) => {
       recommendation: e.recommendation,
     })),
     specialists: specialists.map((s) => ({ name: s.name })),
-    homeCares: homeCares.map((h) => ({
-      name: h.name,
-      morning: h.morning,
-      evening: h.evening,
-    })),
+    homeCares: homeCaresData,
     additionalInfo: data.additionalInfo,
     comments: data.comments,
-  };
+  } as IReport;
 
   return await Report.create(reportData);
 };
 
-export const getAll = async () => {
-  return await Report.find();
-};
-
-export const getById = async (id: string) => {
-  return await Report.findById(id);
-};
-export const getByPatientId = async (patientId: string) => {
-  return await Report.findOne({ patient: patientId });
-};
-
-export const update = async (id: string, data: Partial<IReport>) => {
-  return await Report.findByIdAndUpdate(id, data, { new: true });
-};
+export const getAll = async () => Report.find();
+export const getById = async (id: string) => Report.findById(id);
+export const getByPatientId = async (patientId: string) =>
+  Report.findOne({ patient: patientId });
+export const update = async (id: string, data: Partial<IReport>) =>
+  Report.findByIdAndUpdate(id, data, { new: true });

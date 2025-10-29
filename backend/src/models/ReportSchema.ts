@@ -1,15 +1,37 @@
 import mongoose, { Document, Schema } from "mongoose";
 
+export interface IReportHomeCare {
+  _id?: string;
+  name: string;
+  morning: boolean;
+  evening: boolean;
+  medicationName?: string;
+}
+
 export interface IReport extends Document {
   patient: mongoose.Types.ObjectId;
   medications: { name: string; recommendation: string }[];
   procedures: { name: string; recommendation: string }[];
   exams: { name: string; recommendation: string }[];
   specialists: { name: string; query?: string }[];
-  homeCares?: { name: string; morning: boolean; evening: boolean }[];
+  homeCares?: IReportHomeCare[];
   comments?: string;
   additionalInfo?: string;
 }
+
+const HomeCareSubSchema = new Schema<IReportHomeCare>(
+  {
+    _id: {
+      type: String,
+      default: () => new mongoose.Types.ObjectId().toString(),
+    },
+    name: { type: String, required: true },
+    morning: { type: Boolean, default: false },
+    evening: { type: Boolean, default: false },
+    medicationName: { type: String, default: "" },
+  },
+  { _id: false }
+);
 
 const ReportSchema = new Schema<IReport>(
   {
@@ -18,7 +40,7 @@ const ReportSchema = new Schema<IReport>(
     procedures: [{ name: String, recommendation: String }],
     exams: [{ name: String, recommendation: String }],
     specialists: [{ name: String, query: String }],
-    homeCares: [{ name: String, morning: Boolean, evening: Boolean }],
+    homeCares: [HomeCareSubSchema],
     comments: String,
     additionalInfo: String,
   },

@@ -1,8 +1,8 @@
 import HomeCare from "../models/HomeCareSchema";
 
 export const getAllHomeCaresService = async (search?: string) => {
-  const query = search ? { name: { $regex: search, $options: "i" } } : {};
-
+  const query: any = {};
+  if (search) query.name = { $regex: search, $options: "i" };
   return await HomeCare.find(query);
 };
 
