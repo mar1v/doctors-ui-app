@@ -1,14 +1,17 @@
 import { searchHomeCaresByName, type IHomeCare } from "#api/homeCaresApi";
+import type { IMedication } from "#api/medicationsApi";
 import { useEffect, useState } from "react";
 
 interface Props {
   selectedHomeCares: IHomeCare[];
   setSelectedHomeCares: React.Dispatch<React.SetStateAction<IHomeCare[]>>;
+  selectedMedications: IMedication[];
 }
 
 const SearchHomeCare: React.FC<Props> = ({
   selectedHomeCares,
   setSelectedHomeCares,
+  selectedMedications,
 }) => {
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<IHomeCare[]>([]);
@@ -32,12 +35,20 @@ const SearchHomeCare: React.FC<Props> = ({
     return () => clearTimeout(delay);
   }, [search]);
 
-  const addHomeCare = (homeCare: IHomeCare) => {
-    if (!selectedHomeCares.find((h) => h._id === homeCare._id)) {
-      setSelectedHomeCares((prev) => [...prev, homeCare]);
-      setSearch("");
-      setResults([]);
-    }
+  const addHomeCare = (homeCare: IHomeCare, medicationName: string) => {
+    const uniqueKey = `${homeCare._id}-${medicationName.trim()}`;
+
+    if (selectedHomeCares.some((h) => h._id === uniqueKey)) return;
+
+    const careWithMedication: IHomeCare = {
+      ...homeCare,
+      _id: uniqueKey,
+      medicationName: medicationName.trim(),
+    };
+
+    setSelectedHomeCares((prev) => [...prev, careWithMedication]);
+    setSearch("");
+    setResults([]);
   };
 
   return (
@@ -54,45 +65,49 @@ const SearchHomeCare: React.FC<Props> = ({
         <p className="text-green-700 text-sm mt-1 mb-2">Завантаження...</p>
       )}
 
-      {results.length > 0 && !loading && (
+      {results.length > 0 && !loading && selectedMedications.length > 0 && (
         <div className="overflow-x-auto mb-3 mt-2">
           <table className="min-w-full border border-green-200 rounded-md text-sm text-center">
             <thead className="bg-green-100">
               <tr>
-                <th className="px-3 py-1 border-b border-green-200 text-left">
-                  Назва
-                </th>
-                <th className="px-3 py-1 border-b border-green-200">Ранок</th>
-                <th className="px-3 py-1 border-b border-green-200">Вечір</th>
-                <th className="px-3 py-1 border-b border-green-200">Дії</th>
+                <th className="px-3 py-1 text-left">Назва</th>
+                <th className="px-3 py-1">Засіб</th>
+                <th className="px-3 py-1">Ранок</th>
+                <th className="px-3 py-1">Вечір</th>
+                <th className="px-3 py-1">Дії</th>
               </tr>
             </thead>
 
             <tbody>
-              {results.map((h) => (
-                <tr key={h._id}>
-                  <td className="px-3 py-1 text-left border-t border-green-100">
-                    {h.name}
-                  </td>
-                  <td className="px-3 py-1 border-t border-green-100">
-                    {h.morning ? "✓" : "–"}
-                  </td>
-                  <td className="px-3 py-1 border-t border-green-100">
-                    {h.evening ? "✓" : "–"}
-                  </td>
-                  <td className="px-3 py-1 border-t border-green-100">
-                    <button
-                      onClick={() => addHomeCare(h)}
-                      className="text-green-500 hover:text-green-700"
-                    >
-                      Додати
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {results.flatMap((h) =>
+                selectedMedications.map((m) => (
+                  <tr key={`${h._id}-${m.name}`}>
+                    <td className="px-3 py-1 text-left">{h.name}</td>
+                    <td className="px-3 py-1 text-gray-700 font-medium">
+                      {m.name}
+                    </td>
+                    <td className="px-3 py-1">{h.morning ? "✓" : "–"}</td>
+                    <td className="px-3 py-1">{h.evening ? "✓" : "–"}</td>
+                    <td className="px-3 py-1">
+                      <button
+                        onClick={() => addHomeCare(h, m.name)}
+                        className="text-green-600 hover:text-green-800"
+                      >
+                        Додати
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
+      )}
+
+      {!loading && selectedMedications.length === 0 && (
+        <p className="text-sm text-gray-500 mt-2">
+          Спочатку додайте хоча б один засіб.
+        </p>
       )}
     </>
   );

@@ -8,6 +8,7 @@ import logoUrl from "#assets/logo.png";
 import NoahBoldTTFUrl from "#fonts/Noah-Bold.ttf";
 import NoahTTFUrl from "#fonts/Noah-Regular.ttf";
 import { jsPDF } from "jspdf";
+import { toast } from "react-hot-toast/headless";
 
 interface GenerateReportPDFParams {
   patient: IPatient;
@@ -72,11 +73,11 @@ export const generateReportPDF = async ({
       reader.readAsDataURL(logoBlob);
     });
     const logoWidth = 25;
-    const logoHeight = 12;
+    const logoHeight = 15;
     const logoX = (pageWidth - logoWidth) / 2;
     pdf.addImage(logoBase64, "PNG", logoX, y - 8, logoWidth, logoHeight);
   } catch {
-    console.log("Не вдалося завантажити логотип для PDF");
+    toast.error("Не вдалося завантажити логотип для PDF");
   }
 
   y += 25;
@@ -137,34 +138,57 @@ export const generateReportPDF = async ({
     pdf.setFont("Noah", "bold");
     pdf.setFontSize(12);
     pdf.text("Домашній догляд:", 14, y);
-    y += 8;
-
-    pdf.setFont("Noah", "bold");
-    pdf.setFontSize(11);
-    pdf.text("Ранок", pageWidth - 40, y - 8);
-    pdf.text("Вечір", pageWidth - 20, y - 8);
+    y += 10;
 
     pdf.setFont("Noah", "normal");
     pdf.setFontSize(11);
 
-    homeCares.forEach((h) => {
-      if (y > 270) {
+    const groupedByMedication = homeCares.reduce((acc, h) => {
+      const medName =
+        h.medicationName?.trim() ||
+        (h._id?.includes("-") ? h._id.split("-").slice(1).join("-") : "Засіб");
+
+      if (!acc[medName]) acc[medName] = [];
+      acc[medName].push(h);
+      return acc;
+    }, {} as Record<string, IHomeCare[]>);
+
+    Object.entries(groupedByMedication).forEach(([medName, cares]) => {
+      if (y > 260) {
         pdf.addPage();
         y = 20;
       }
 
-      pdf.text(`• ${h.name}`, 18, y);
+      pdf.setFont("Noah", "bold");
+      pdf.text(`${medName}:`, 16, y);
+      y += 6;
 
-      if (h.morning) pdf.rect(pageWidth - 42, y - 4, 4, 4, "F");
-      else pdf.rect(pageWidth - 42, y - 4, 4, 4);
+      pdf.setFont("Noah", "normal");
 
-      if (h.evening) pdf.rect(pageWidth - 22, y - 4, 4, 4, "F");
-      else pdf.rect(pageWidth - 22, y - 4, 4, 4);
+      pdf.setFont("Noah", "bold");
+      pdf.text("Ранок", pageWidth - 40, y - 6);
+      pdf.text("Вечір", pageWidth - 20, y - 6);
+      pdf.setFont("Noah", "normal");
 
-      y += 8;
+      cares.forEach((h) => {
+        if (y > 270) {
+          pdf.addPage();
+          y = 20;
+        }
+
+        pdf.text(`• ${h.name}`, 18, y);
+
+        if (h.morning) pdf.rect(pageWidth - 40, y - 4, 4, 4, "F");
+        else pdf.rect(pageWidth - 40, y - 4, 4, 4);
+
+        if (h.evening) pdf.rect(pageWidth - 20, y - 4, 4, 4, "F");
+        else pdf.rect(pageWidth - 20, y - 4, 4, 4);
+
+        y += 7;
+      });
+
+      y += 5;
     });
-
-    y += 6;
   }
 
   addSection(
@@ -172,11 +196,11 @@ export const generateReportPDF = async ({
     procedures.map((p) => `${p.name}\n· ${p.recommendation}`)
   );
 
-  if (additionalInfo && additionalInfo.trim()) {
+  if (additionalInfo?.trim()) {
     addSection("Все, що необхідно знати про ваш стан", [additionalInfo]);
   }
 
-  if (comments && comments.trim()) {
+  if (comments?.trim()) {
     addSection("Додаткова інформація", [comments]);
   }
 

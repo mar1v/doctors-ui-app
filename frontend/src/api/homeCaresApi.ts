@@ -7,18 +7,18 @@ export interface IHomeCare {
   name: string;
   morning: boolean;
   evening: boolean;
+  medicationName?: string;
 }
-
 export const getAllHomeCares = async (): Promise<IHomeCare[]> => {
   const { data } = await axios.get(API_URL);
   return data;
 };
 
 export const searchHomeCaresByName = async (
-  name: string
+  name?: string
 ): Promise<IHomeCare[]> => {
-  const { data } = await axios.get(
-    `${API_URL}?search=${encodeURIComponent(name)}`
-  );
+  const params: Record<string, string> = {};
+  if (name) params.search = name;
+  const { data } = await axios.get<IHomeCare[]>(API_URL, { params });
   return data;
 };

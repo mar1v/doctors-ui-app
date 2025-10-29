@@ -103,7 +103,6 @@ const PatientList: React.FC = () => {
           </div>
         )}
       </div>
-
       <PatientFormModal
         visible={showModal}
         onClose={() => setShowModal(false)}

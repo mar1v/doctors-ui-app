@@ -109,6 +109,7 @@ const CreateReportForm: React.FC = () => {
         name: h.name,
         morning: h.morning,
         evening: h.evening,
+        medicationName: h.medicationName || "Засіб",
       })),
       comments,
       additionalInfo,
@@ -206,6 +207,7 @@ const CreateReportForm: React.FC = () => {
                 <SearchHomeCare
                   selectedHomeCares={selectedHomeCares}
                   setSelectedHomeCares={setSelectedHomeCares}
+                  selectedMedications={selectedMedications}
                 />
                 <SelectedHomeCaresTable
                   selectedHomeCares={selectedHomeCares}
@@ -218,7 +220,7 @@ const CreateReportForm: React.FC = () => {
                   value={additionalInfo}
                   onChange={(e) => setAdditionalInfo(e.target.value)}
                   placeholder="Необхідна інформація"
-                  className="w-full border border-green-200 rounded-md text-sm p-2 resize-none focus:ring-1 focus:ring-green-400 focus:outline-none"
+                  className="w-full border border-green-200  rounded-md text-sm p-2 resize-none focus:ring-1 focus:outline-none"
                   rows={4}
                 />
               </ReportSection>

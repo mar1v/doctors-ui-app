@@ -11,6 +11,7 @@ export interface IReport {
     name: string;
     morning: boolean;
     evening: boolean;
+    medicationName?: string;
   }[];
   additionalInfo?: string;
   comments?: string;
