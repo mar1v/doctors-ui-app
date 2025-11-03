@@ -11,8 +11,6 @@ import SearchExam from "#components/Exams/SearchExam";
 import SelectedExamsTable from "#components/Exams/SelectedExamsTable";
 import SearchHomeCare from "#components/HomeCare/SearchHomeCare";
 import SelectedHomeCaresTable from "#components/HomeCare/SelectedHomeCaresTable";
-import SearchMedication from "#components/Medications/SearchMedication";
-import SelectedMedicationsTable from "#components/Medications/SelectedMedicatonsTable";
 import SearchProcedure from "#components/Procedures/SearchProcedure";
 import SelectedProceduresTable from "#components/Procedures/SelectedProceduresTable";
 import SearchSpecialist from "#components/Specialists/SearchSpecialist";
@@ -157,18 +155,6 @@ const CreateReportForm: React.FC = () => {
             </h2>
 
             <div className="space-y-3">
-              <ReportSection title="Засоби">
-                <SearchMedication
-                  selectedMedications={selectedMedications}
-                  setSelectedMedications={setSelectedMedications}
-                  medication={[]}
-                />
-                <SelectedMedicationsTable
-                  selectedMedications={selectedMedications}
-                  setSelectedMedications={setSelectedMedications}
-                />
-              </ReportSection>
-
               <ReportSection title="Обстеження">
                 <SearchExam
                   selectedExams={selectedExams}
@@ -192,7 +178,7 @@ const CreateReportForm: React.FC = () => {
                 />
               </ReportSection>
 
-              <ReportSection title="Суміжні спеціалісти">
+              <ReportSection title="Рекомендована консультація суміжного спеціаліста">
                 <SearchSpecialist
                   selectedSpecialists={selectedSpecialists}
                   setSelectedSpecialists={setSelectedSpecialists}
@@ -207,7 +193,6 @@ const CreateReportForm: React.FC = () => {
                 <SearchHomeCare
                   selectedHomeCares={selectedHomeCares}
                   setSelectedHomeCares={setSelectedHomeCares}
-                  selectedMedications={selectedMedications}
                 />
                 <SelectedHomeCaresTable
                   selectedHomeCares={selectedHomeCares}

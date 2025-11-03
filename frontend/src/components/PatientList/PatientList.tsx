@@ -3,6 +3,7 @@ import * as patientsApi from "#api/patientsApi";
 import PatientFormModal from "#components/PatientList/PatientFormModal";
 import PatientItem from "#components/PatientList/PatientItem";
 import React, { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const PatientList: React.FC = () => {
   const [patients, setPatients] = useState<IPatient[]>([]);
@@ -10,6 +11,7 @@ const PatientList: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [query, setQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
 
   const limit = 5;
 
@@ -28,6 +30,9 @@ const PatientList: React.FC = () => {
     await patientsApi.createPatient(patient);
     setShowModal(false);
     fetchPatients();
+    navigate(
+      "/create-report/" + (await patientsApi.createPatient(patient))._id
+    );
   };
 
   return (
@@ -44,7 +49,7 @@ const PatientList: React.FC = () => {
           md:w-[90%] xl:w-[75%] 2xl:w-[65%]
         "
       >
-        <div className="mb-6 flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center">
+        <div className="mb-6 flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 items-stretch sm:items-center justify-between">
           <input
             type="text"
             value={query}
@@ -55,25 +60,31 @@ const PatientList: React.FC = () => {
             className="border p-3 rounded-lg w-full sm:flex-1 focus:ring-2 focus:ring-blue-500 outline-none transition"
             placeholder="Пошук пацієнта..."
           />
-          <button
-            onClick={() => setShowModal(true)}
-            className="px-5 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 active:scale-95 transition w-full sm:w-auto"
-          >
-            Створити карту пацієнта
-          </button>
+
+          <div className="flex gap-3 flex-wrap justify-center sm:justify-end w-full sm:w-auto">
+            <button
+              onClick={() => setShowModal(true)}
+              className="px-5 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 active:scale-95 transition"
+            >
+              Створити карту пацієнта
+            </button>
+
+            <button
+              onClick={() => navigate("/admin")}
+              className="px-5 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 active:scale-95 transition"
+            >
+              Панель довідників
+            </button>
+          </div>
         </div>
 
-        <div className="flex-1 ">
+        <div className="flex-1">
           {patients.length === 0 ? (
             <p className="text-gray-500 text-center py-8 text-lg">
               Пацієнтів не знайдено
             </p>
           ) : (
-            <ul
-              className="
-              flex flex-col gap-4
-              "
-            >
+            <ul className="flex flex-col gap-4">
               {patients.map((p) => (
                 <PatientItem key={p._id} patient={p} />
               ))}
@@ -103,6 +114,7 @@ const PatientList: React.FC = () => {
           </div>
         )}
       </div>
+
       <PatientFormModal
         visible={showModal}
         onClose={() => setShowModal(false)}

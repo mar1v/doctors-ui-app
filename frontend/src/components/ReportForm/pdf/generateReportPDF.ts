@@ -1,6 +1,6 @@
 import type { IExam } from "#api/examsApi";
 import type { IHomeCare } from "#api/homeCaresApi";
-import type { IMedication } from "#api/medicationsApi";
+import { getAllMedications, type IMedication } from "#api/medicationsApi";
 import type { IPatient } from "#api/patientsApi";
 import type { IProcedure } from "#api/proceduresApi";
 import type { ISpecialist } from "#api/specialistsApi";
@@ -24,8 +24,8 @@ interface GenerateReportPDFParams {
 export const generateReportPDF = async ({
   patient,
   exams,
-  medications,
   procedures,
+  medications,
   specialists,
   homeCares,
   additionalInfo,
@@ -36,6 +36,11 @@ export const generateReportPDF = async ({
     unit: "mm",
     format: "a4",
   });
+
+  const allMedications =
+    medications && medications.length > 0
+      ? medications
+      : await getAllMedications();
 
   const loadFont = async (url: string) => {
     const res = await fetch(url);
@@ -129,10 +134,34 @@ export const generateReportPDF = async ({
     exams.map((e) => `${e.name}\n· ${e.recommendation}`)
   );
 
-  addSection(
-    "Рекомендовані засоби",
-    medications.map((m) => `${m.name}\n· ${m.recommendation}`)
+  const normalize = (str?: string) =>
+    str
+      ?.toLowerCase()
+      .replace(/\s+/g, " ")
+      .replace(/[()]/g, "")
+      .replace(/ml/g, "")
+      .trim() || "";
+
+  const usedNames = Array.from(
+    new Set(homeCares.map((h) => h.medicationName?.trim()).filter(Boolean))
   );
+
+  const medsFromBase = usedNames
+    .map((name) => {
+      const normalizedName = normalize(name);
+      const found = allMedications.find(
+        (m) =>
+          normalize(m.name) === normalizedName ||
+          normalize(m.name).includes(normalizedName) ||
+          normalizedName.includes(normalize(m.name))
+      );
+
+      if (found) return `${found.name}\n· ${found.recommendation || "—"}`;
+      else return `${name}\n· Рекомендацію не знайдено в базі`;
+    })
+    .filter(Boolean) as string[];
+
+  addSection("Рекомендовані засоби", medsFromBase);
 
   if (homeCares.length > 0) {
     pdf.setFont("Noah", "bold");

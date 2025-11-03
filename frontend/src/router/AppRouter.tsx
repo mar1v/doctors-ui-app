@@ -4,6 +4,7 @@ import {
   LoginPage,
   NotFoundPage,
   PatientListPage,
+  ReferencePanel,
 } from "#pages/index";
 import PrivateRoute from "#router/PrivateRoute";
 import { Route, Routes } from "react-router-dom";
@@ -36,6 +37,7 @@ export const AppRouter: React.FC = () => {
           </PrivateRoute>
         }
       />
+      <Route path="/admin" element={<ReferencePanel />} />
       <Route path="/error" element={<ErrorPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

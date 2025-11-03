@@ -22,3 +22,22 @@ export const searchHomeCaresByName = async (
   const { data } = await axios.get<IHomeCare[]>(API_URL, { params });
   return data;
 };
+
+export const createHomeCare = async (
+  homeCare: Partial<IHomeCare>
+): Promise<IHomeCare> => {
+  const { data } = await axios.post<IHomeCare>(API_URL, homeCare);
+  return data;
+};
+
+export const updateHomeCare = async (
+  id: string,
+  homeCare: Partial<IHomeCare>
+): Promise<IHomeCare> => {
+  const { data } = await axios.put<IHomeCare>(`${API_URL}/${id}`, homeCare);
+  return data;
+};
+
+export const deleteHomeCare = async (id: string): Promise<void> => {
+  await axios.delete(`${API_URL}/${id}`);
+};

@@ -23,3 +23,5 @@ export const createExam = async (exam: IExam) =>
   (await axios.post(API_URL, exam)).data;
 export const updateExam = async (id: string, exam: IExam) =>
   (await axios.put(`${API_URL}/${id}`, exam)).data;
+export const deleteExam = async (id: string) =>
+  (await axios.delete(`${API_URL}/${id}`)).data;

@@ -17,3 +17,5 @@ export const createSpecialist = async (specialist: ISpecialist) =>
   (await axios.post(API_URL, specialist)).data;
 export const updateSpecialist = async (id: string, specialist: ISpecialist) =>
   (await axios.put(`${API_URL}/${id}`, specialist)).data;
+export const deleteSpecialist = async (id: string) =>
+  (await axios.delete(`${API_URL}/${id}`)).data;

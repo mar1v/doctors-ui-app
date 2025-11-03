@@ -18,3 +18,5 @@ export const createProcedure = async (procedure: IProcedure) =>
   (await axios.post(API_URL, procedure)).data;
 export const updateProcedure = async (id: string, procedure: IProcedure) =>
   (await axios.put(`${API_URL}/${id}`, procedure)).data;
+export const deleteProcedure = async (id: string) =>
+  (await axios.delete(`${API_URL}/${id}`)).data;

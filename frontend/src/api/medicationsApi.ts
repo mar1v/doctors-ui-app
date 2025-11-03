@@ -26,3 +26,5 @@ export const createMedication = async (medication: IMedication) =>
   (await axios.post(API_URL, medication)).data;
 export const updateMedication = async (id: string, medication: IMedication) =>
   (await axios.put(`${API_URL}/${id}`, medication)).data;
+export const deleteMedication = async (id: string) =>
+  (await axios.delete(`${API_URL}/${id}`)).data;

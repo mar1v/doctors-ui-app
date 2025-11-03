@@ -28,6 +28,7 @@ export const PatientFormModal: React.FC<Props> = ({
       return;
     }
     onSave(form);
+    onClose();
   };
 
   return (

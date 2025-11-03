@@ -3,6 +3,7 @@ import ErrorPage from "#pages/ErrorPage";
 import LoginPage from "#pages/LoginPage";
 import NotFoundPage from "#pages/NotFoundPage";
 import PatientListPage from "#pages/PatientListPage";
+import ReferencePanel from "#pages/admin/ReferencePanel";
 
 export {
   CreateReportPage,
@@ -10,4 +11,5 @@ export {
   LoginPage,
   NotFoundPage,
   PatientListPage,
+  ReferencePanel,
 };
