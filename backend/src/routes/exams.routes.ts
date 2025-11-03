@@ -7,5 +7,6 @@ router.get("/", ExamsController.getAllExams);
 router.get("/:query", ExamsController.searchExams);
 router.post("/", ExamsController.createExam);
 router.put("/:id", ExamsController.updateExam);
+router.delete("/:id", ExamsController.deleteExam);
 
 export default router;

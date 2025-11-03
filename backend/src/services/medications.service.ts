@@ -21,3 +21,6 @@ export const update = async (
 ): Promise<IMedication | null> => {
   return Medication.findByIdAndUpdate(id, { $set: data }, { new: true });
 };
+export const remove = async (id: string): Promise<IMedication | null> => {
+  return Medication.findByIdAndDelete(id);
+};

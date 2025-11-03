@@ -18,3 +18,6 @@ export const update = async (
 ): Promise<ISpecialist | null> => {
   return Specialist.findByIdAndUpdate(id, { $set: data }, { new: true });
 };
+export const remove = async (id: string): Promise<ISpecialist | null> => {
+  return Specialist.findByIdAndDelete(id);
+};

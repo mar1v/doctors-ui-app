@@ -1,4 +1,3 @@
-// controllers/medications.controller.ts
 import { NextFunction, Request, Response } from "express";
 import * as MedicationsService from "../services/medications.service";
 import ApiError from "../utils/ApiError";
@@ -61,6 +60,22 @@ export const updateMedication = async (
     const updatedMed = await MedicationsService.update(id, { name });
     if (!updatedMed) return next(ApiError.notFound("Не знайдено"));
     res.json(updatedMed);
+  } catch (err) {
+    console.log(err);
+    next(ApiError.internal("Помилка сервера"));
+  }
+};
+
+export const deleteMedication = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const deletedMed = await MedicationsService.remove(id);
+    if (!deletedMed) return next(ApiError.notFound("Не знайдено"));
+    res.json(deletedMed);
   } catch (err) {
     console.log(err);
     next(ApiError.internal("Помилка сервера"));

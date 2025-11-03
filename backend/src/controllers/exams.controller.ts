@@ -65,3 +65,18 @@ export const updateExam = async (
     next(ApiError.internal("Помилка сервера"));
   }
 };
+export const deleteExam = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const deletedExam = await ExamsService.remove(id);
+    if (!deletedExam) return next(ApiError.notFound("Не знайдено"));
+    res.json(deletedExam);
+  } catch (err) {
+    console.error(err);
+    next(ApiError.internal("Помилка сервера"));
+  }
+};

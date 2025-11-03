@@ -22,3 +22,6 @@ export const update = async (
 ): Promise<IProcedure | null> => {
   return Procedure.findByIdAndUpdate(id, { $set: data }, { new: true });
 };
+export const remove = async (id: string): Promise<IProcedure | null> => {
+  return Procedure.findByIdAndDelete(id);
+};

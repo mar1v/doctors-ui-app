@@ -70,3 +70,21 @@ export const updateProcedure = async (
     next(ApiError.internal("Помилка сервера"));
   }
 };
+
+export const deleteProcedure = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const deletedProcedure = await ProceduresService.remove(id);
+    if (!deletedProcedure) {
+      return next(ApiError.notFound("Не знайдено"));
+    }
+    res.json(deletedProcedure);
+  } catch (error) {
+    console.error(error);
+    next(ApiError.internal("Помилка сервера"));
+  }
+};

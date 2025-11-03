@@ -34,7 +34,7 @@ export const searchSpecialists = async (
   }
 };
 
-export const create = async (
+export const createdSpecialist = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -49,7 +49,7 @@ export const create = async (
   }
 };
 
-export const update = async (
+export const updatedSpecialist = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -65,5 +65,22 @@ export const update = async (
   } catch (err) {
     console.error(err);
     next(ApiError.badRequest("Помилка запиту"));
+  }
+};
+export const deletedSpecialist = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const deletedSpecialist = await specialistService.remove(id);
+    if (!deletedSpecialist) {
+      return next(ApiError.notFound("Не знайдено"));
+    }
+    res.json(deletedSpecialist);
+  } catch (err) {
+    console.error(err);
+    next(ApiError.internal("Помилка сервера"));
   }
 };

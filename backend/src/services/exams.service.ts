@@ -21,3 +21,6 @@ export const update = async (
 ): Promise<IExam | null> => {
   return Exam.findByIdAndUpdate(id, { $set: data }, { new: true });
 };
+export const remove = async (id: string): Promise<IExam | null> => {
+  return Exam.findByIdAndDelete(id);
+};

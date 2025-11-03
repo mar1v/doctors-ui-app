@@ -13,3 +13,12 @@ export const createHomeCareService = async (data: {
 }) => {
   return await HomeCare.create(data);
 };
+export const updateHomeCareService = async (
+  id: string,
+  data: { name: string; morning?: boolean; evening?: boolean }
+) => {
+  return await HomeCare.findByIdAndUpdate(id, { $set: data }, { new: true });
+};
+export const deleteHomeCareService = async (id: string) => {
+  return await HomeCare.findByIdAndDelete(id);
+};
