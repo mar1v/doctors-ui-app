@@ -66,6 +66,7 @@ const SearchHomeCare: React.FC<Props> = ({
     setSelectedHomeCares((prev) => [...prev, careWithMedication]);
     setSearchMed("");
     setResultsMed([]);
+    setSelectedCare(null);
   };
 
   return (
