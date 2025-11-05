@@ -72,8 +72,8 @@ const CreateReportForm: React.FC = () => {
 
           setAdditionalInfo(reportData.additionalInfo ?? "");
         }
-      } catch (error) {
-        console.error("Error fetching report:", error);
+      } catch {
+        toast.error("Не вдалося завантажити дані. Спробуйте ще раз.");
       } finally {
         setLoading(false);
       }
@@ -123,8 +123,7 @@ const CreateReportForm: React.FC = () => {
         toast.success("Звіт створено успішно!");
         setReportId(savedReport?._id ?? null);
       }
-    } catch (error) {
-      console.error("Error saving report:", error);
+    } catch {
       toast.error("Не вдалося зберегти звіт. Спробуйте ще раз.");
     }
   };

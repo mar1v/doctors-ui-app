@@ -1,5 +1,6 @@
 import type { IExam } from "#api/examsApi";
 import type { IHomeCare } from "#api/homeCaresApi";
+import { getAllHomeCares } from "#api/homeCaresApi";
 import { getAllMedications, type IMedication } from "#api/medicationsApi";
 import type { IPatient } from "#api/patientsApi";
 import type { IProcedure } from "#api/proceduresApi";
@@ -163,61 +164,69 @@ export const generateReportPDF = async ({
 
   addSection("Рекомендовані засоби", medsFromBase);
 
-  if (homeCares.length > 0) {
+  {
     pdf.setFont("Noah", "bold");
     pdf.setFontSize(12);
-    pdf.text("Домашній догляд:", 14, y);
-    y += 10;
+    pdf.text("Домашній догляд", 14, y);
+    y += 8;
 
-    pdf.setFont("Noah", "normal");
+    const allCares = await getAllHomeCares();
+    const allCategories = allCares.map((c) => c.name?.trim() || "Невідомо");
+
+    const colX = {
+      category: 14,
+      medication: 60,
+      morning: pageWidth - 40,
+      evening: pageWidth - 20,
+    };
+
+    pdf.setFont("Noah", "bold");
     pdf.setFontSize(11);
+    pdf.text("Ранок", colX.morning, y);
+    pdf.text("Вечір", colX.evening, y);
+    y += 6;
 
-    const groupedByMedication = homeCares.reduce((acc, h) => {
-      const medName =
-        h.medicationName?.trim() ||
-        (h._id?.includes("-") ? h._id.split("-").slice(1).join("-") : "Засіб");
-
-      if (!acc[medName]) acc[medName] = [];
-      acc[medName].push(h);
-      return acc;
-    }, {} as Record<string, IHomeCare[]>);
-
-    Object.entries(groupedByMedication).forEach(([medName, cares]) => {
-      if (y > 260) {
+    for (const category of allCategories) {
+      if (y > 270) {
         pdf.addPage();
         y = 20;
       }
 
-      pdf.setFont("Noah", "bold");
-      pdf.text(`${medName}:`, 16, y);
-      y += 6;
-
-      pdf.setFont("Noah", "normal");
+      const items = homeCares.filter((h) => h.name === category);
 
       pdf.setFont("Noah", "bold");
-      pdf.text("Ранок", pageWidth - 40, y - 6);
-      pdf.text("Вечір", pageWidth - 20, y - 6);
-      pdf.setFont("Noah", "normal");
+      pdf.setFontSize(11);
+      pdf.text(category, colX.category, y);
 
-      cares.forEach((h) => {
-        if (y > 270) {
-          pdf.addPage();
-          y = 20;
+      if (items.length === 0) {
+        pdf.setFont("Noah", "normal");
+        pdf.text("—", colX.medication, y);
+        pdf.rect(colX.morning, y - 3.5, 4, 4);
+        pdf.rect(colX.evening, y - 3.5, 4, 4);
+        y += 7;
+        continue;
+      }
+
+      pdf.setFont("Noah", "normal");
+      pdf.setFontSize(11);
+
+      items.forEach((h, index) => {
+        if (index === 0) {
+          pdf.text(h.medicationName || "—", colX.medication, y);
+        } else {
+          y += 6;
+          pdf.text(h.medicationName || "—", colX.medication, y);
         }
 
-        pdf.text(`• ${h.name}`, 18, y);
+        if (h.morning) pdf.rect(colX.morning, y - 3.5, 4, 4, "F");
+        else pdf.rect(colX.morning, y - 3.5, 4, 4);
 
-        if (h.morning) pdf.rect(pageWidth - 40, y - 4, 4, 4, "F");
-        else pdf.rect(pageWidth - 40, y - 4, 4, 4);
-
-        if (h.evening) pdf.rect(pageWidth - 20, y - 4, 4, 4, "F");
-        else pdf.rect(pageWidth - 20, y - 4, 4, 4);
-
-        y += 7;
+        if (h.evening) pdf.rect(colX.evening, y - 3.5, 4, 4, "F");
+        else pdf.rect(colX.evening, y - 3.5, 4, 4);
       });
 
-      y += 5;
-    });
+      y += 8;
+    }
   }
 
   addSection(

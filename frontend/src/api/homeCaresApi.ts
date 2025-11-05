@@ -3,7 +3,7 @@ import axios from "axios";
 const API_URL = import.meta.env.VITE_API_URL + "/home-cares";
 
 export interface IHomeCare {
-  _id?: string;
+  _id: string;
   name: string;
   morning: boolean;
   evening: boolean;
