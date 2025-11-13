@@ -12,6 +12,18 @@ export interface IReport extends Document {
   patient: mongoose.Types.ObjectId;
   medications: { name: string; recommendation: string }[];
   procedures: { name: string; recommendation: string }[];
+  procedureStages: [
+    {
+      stage: String;
+      procedures: [
+        {
+          name: String;
+          comment: String;
+          recommendation: String;
+        }
+      ];
+    }
+  ];
   exams: { name: string; recommendation: string }[];
   specialists: { name: string; query?: string }[];
   homeCares?: IReportHomeCare[];
@@ -38,6 +50,18 @@ const ReportSchema = new Schema<IReport>(
     patient: { type: Schema.Types.ObjectId, ref: "Patient", required: true },
     medications: [{ name: String, recommendation: String }],
     procedures: [{ name: String, recommendation: String }],
+    procedureStages: [
+      {
+        stage: String,
+        procedures: [
+          {
+            name: String,
+            comment: String,
+            recommendation: String,
+          },
+        ],
+      },
+    ],
     exams: [{ name: String, recommendation: String }],
     specialists: [{ name: String, query: String }],
     homeCares: [HomeCareSubSchema],
