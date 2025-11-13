@@ -1,12 +1,12 @@
 import { searchProceduresByName, type IProcedure } from "#api/proceduresApi";
 import { useEffect, useState } from "react";
 
-interface Props {
-  selectedProcedures: IProcedure[];
-  setSelectedProcedures: React.Dispatch<React.SetStateAction<IProcedure[]>>;
+interface Props<T extends IProcedure> {
+  selectedProcedures: T[];
+  setSelectedProcedures: React.Dispatch<React.SetStateAction<T[]>>;
 }
 
-const SearchProcedure: React.FC<Props> = ({
+const SearchProcedure: React.FC<Props<IProcedure>> = ({
   selectedProcedures,
   setSelectedProcedures,
 }) => {

@@ -1,7 +1,7 @@
 import type { IExam } from "#api/examsApi";
 import type { IHomeCare } from "#api/homeCaresApi";
 import { getAllHomeCares } from "#api/homeCaresApi";
-import { getAllMedications, type IMedication } from "#api/medicationsApi";
+import type { IMedication } from "#api/medicationsApi";
 import type { IPatient } from "#api/patientsApi";
 import type { IProcedure } from "#api/proceduresApi";
 import type { ISpecialist } from "#api/specialistsApi";
@@ -11,11 +11,17 @@ import NoahTTFUrl from "#fonts/Noah-Regular.ttf";
 import { jsPDF } from "jspdf";
 import { toast } from "react-hot-toast/headless";
 
+interface IProcedureStage {
+  title: string;
+  procedures: (IProcedure & { comment?: string })[];
+}
+
 interface GenerateReportPDFParams {
   patient: IPatient;
   exams: IExam[];
   medications: IMedication[];
   procedures: IProcedure[];
+  procedureStages?: IProcedureStage[];
   specialists: ISpecialist[];
   homeCares: IHomeCare[];
   additionalInfo: string;
@@ -26,7 +32,7 @@ export const generateReportPDF = async ({
   patient,
   exams,
   procedures,
-  medications,
+  procedureStages = [],
   specialists,
   homeCares,
   additionalInfo,
@@ -37,11 +43,6 @@ export const generateReportPDF = async ({
     unit: "mm",
     format: "a4",
   });
-
-  const allMedications =
-    medications && medications.length > 0
-      ? medications
-      : await getAllMedications();
 
   const loadFont = async (url: string) => {
     const res = await fetch(url);
@@ -70,6 +71,7 @@ export const generateReportPDF = async ({
   const pageWidth = pdf.internal.pageSize.getWidth();
   let y = 20;
 
+  // --- Логотип ---
   try {
     const logoRes = await fetch(logoUrl);
     const logoBlob = await logoRes.blob();
@@ -90,11 +92,18 @@ export const generateReportPDF = async ({
 
   pdf.setFont("Noah", "bold");
   pdf.setFontSize(13);
-  pdf.text("Рекомендаційний лист", 14, y);
+  pdf.text("Рекомендаційний лист", pageWidth / 2, y, { align: "center" });
 
+  // Пацієнт: (bold)
+  pdf.setFont("Noah", "bold");
+  pdf.setFontSize(12);
+  pdf.text("Пацієнт: ", 14, y + 7);
+
+  // patient.fullName (normal)
   pdf.setFont("Noah", "normal");
   pdf.setFontSize(12);
-  pdf.text(patient.fullName || "", 14, y + 7);
+  pdf.text(patient.fullName || "", 30, y + 7);
+
   y += 15;
 
   const addSection = (title: string, lines: string[]) => {
@@ -125,115 +134,172 @@ export const generateReportPDF = async ({
     y += 6;
   };
 
-  addSection(
-    "Рекомендована консультація суміжного спеціаліста",
-    specialists.map((s) => s.name)
-  );
+  // --- Спеціалісти ---
+  if (specialists.length > 0) {
+    addSection(
+      "Рекомендована консультація суміжного спеціаліста",
+      specialists.map((s) => s.name)
+    );
+  }
 
-  addSection(
-    "Рекомендовані обстеження",
-    exams.map((e) => `${e.name}\n· ${e.recommendation}`)
-  );
+  // --- Обстеження ---
+  if (exams.length > 0) {
+    addSection(
+      "Рекомендовані обстеження",
+      exams.map((e) => `${e.name}\n· ${e.recommendation}`)
+    );
+  }
 
-  const normalize = (str?: string) =>
-    str
-      ?.toLowerCase()
-      .replace(/\s+/g, " ")
-      .replace(/[()]/g, "")
-      .replace(/ml/g, "")
-      .trim() || "";
-
-  const usedNames = Array.from(
-    new Set(homeCares.map((h) => h.medicationName?.trim()).filter(Boolean))
-  );
-
-  const medsFromBase = usedNames
-    .map((name) => {
-      const normalizedName = normalize(name);
-      const found = allMedications.find(
-        (m) =>
-          normalize(m.name) === normalizedName ||
-          normalize(m.name).includes(normalizedName) ||
-          normalizedName.includes(normalize(m.name))
-      );
-
-      if (found) return `${found.name}\n· ${found.recommendation || "—"}`;
-      else return `${name}\n· Рекомендацію не знайдено в базі`;
-    })
-    .filter(Boolean) as string[];
-
-  addSection("Рекомендовані засоби", medsFromBase);
-
-  {
+  // --- Домашній догляд ---
+  if (homeCares.length > 0) {
     pdf.setFont("Noah", "bold");
     pdf.setFontSize(12);
     pdf.text("Домашній догляд", 14, y);
     y += 8;
 
-    const allCares = await getAllHomeCares();
-    const allCategories = allCares.map((c) => c.name?.trim() || "Невідомо");
+    const [allCares, allMedications] = await Promise.all([
+      getAllHomeCares(),
+      (await import("#api/medicationsApi")).getAllMedications(),
+    ]);
+
+    const uniqueCategories = Array.from(
+      new Set(allCares.map((c) => c.name?.trim()).filter(Boolean))
+    );
+
+    const normalize = (str?: string) =>
+      str
+        ?.toLowerCase()
+        .replace(/\s+/g, " ")
+        .replace(/[()]/g, "")
+        .replace(/ml/g, "")
+        .trim() || "";
 
     const colX = {
-      category: 14,
-      medication: 60,
-      morning: pageWidth - 40,
-      evening: pageWidth - 20,
+      product: 22,
+      morning: pageWidth / 2 + 10,
+      evening: pageWidth - 30,
     };
 
-    pdf.setFont("Noah", "bold");
-    pdf.setFontSize(11);
-    pdf.text("Ранок", colX.morning, y);
-    pdf.text("Вечір", colX.evening, y);
-    y += 6;
-
-    for (const category of allCategories) {
-      if (y > 270) {
+    for (const category of uniqueCategories) {
+      if (y > 260) {
         pdf.addPage();
         y = 20;
       }
 
       const items = homeCares.filter((h) => h.name === category);
-
-      pdf.setFont("Noah", "bold");
-      pdf.setFontSize(11);
-      pdf.text(category, colX.category, y);
-
       if (items.length === 0) {
-        pdf.setFont("Noah", "normal");
-        pdf.text("—", colX.medication, y);
-        pdf.rect(colX.morning, y - 3.5, 4, 4);
-        pdf.rect(colX.evening, y - 3.5, 4, 4);
-        y += 7;
         continue;
       }
 
-      pdf.setFont("Noah", "normal");
+      pdf.setFont("Noah", "bold");
       pdf.setFontSize(11);
+      pdf.text(category, 16, y);
+      y += 6;
 
-      items.forEach((h, index) => {
-        if (index === 0) {
-          pdf.text(h.medicationName || "—", colX.medication, y);
-        } else {
-          y += 6;
-          pdf.text(h.medicationName || "—", colX.medication, y);
+      pdf.setFont("Noah", "bold");
+      pdf.setFontSize(10);
+      pdf.text("День", colX.morning, y);
+      pdf.text("Ніч", colX.evening, y);
+      y += 7;
+
+      for (const h of items) {
+        if (y > 260) {
+          pdf.addPage();
+          y = 20;
         }
 
-        if (h.morning) pdf.rect(colX.morning, y - 3.5, 4, 4, "F");
-        else pdf.rect(colX.morning, y - 3.5, 4, 4);
+        const found = allMedications.find(
+          (m) =>
+            normalize(m.name) === normalize(h.medicationName) ||
+            normalize(m.name).includes(normalize(h.medicationName)) ||
+            normalize(h.medicationName).includes(normalize(m.name))
+        );
 
-        if (h.evening) pdf.rect(colX.evening, y - 3.5, 4, 4, "F");
-        else pdf.rect(colX.evening, y - 3.5, 4, 4);
-      });
+        const recommendation =
+          found?.recommendation || "Рекомендацію не знайдено";
+        const text = `${h.medicationName || "—"}\n· ${recommendation}`;
+        const split = pdf.splitTextToSize(text, pageWidth / 2 - 40);
 
-      y += 8;
+        pdf.setFont("Noah", "normal");
+        pdf.setFontSize(10);
+        pdf.text(split, colX.product - 8, y);
+
+        const lineHeight = split.length * 5;
+        const rectY = y - 3.5;
+
+        if (h.morning) pdf.rect(colX.morning, rectY, 4, 4, "F");
+        else pdf.rect(colX.morning, rectY, 4, 4);
+
+        if (h.evening) pdf.rect(colX.evening, rectY, 4, 4, "F");
+        else pdf.rect(colX.evening, rectY, 4, 4);
+
+        y += lineHeight + 3;
+      }
+
+      y += 5;
     }
   }
 
-  addSection(
-    "Протокол процедур",
-    procedures.map((p) => `${p.name}\n· ${p.recommendation}`)
-  );
+  // --- Протокол процедур (етапи) ---
+  if (procedureStages && procedureStages.length > 0) {
+    pdf.setFont("Noah", "bold");
+    pdf.setFontSize(12);
+    pdf.text("Протокол процедур:", 14, y);
+    y += 8;
 
+    for (const [i, stage] of procedureStages.entries()) {
+      if (y > 270) {
+        pdf.addPage();
+        y = 20;
+      }
+
+      // Назва етапу
+      pdf.setFont("Noah", "bold");
+      pdf.setFontSize(11);
+      pdf.text(`${stage.title || `Етап ${i + 1}`}`, 16, y);
+      y += 5;
+
+      // Список процедур
+      pdf.setFont("Noah", "normal");
+      pdf.setFontSize(10);
+
+      if (!stage.procedures.length) {
+        pdf.text("—", 20, y);
+        y += 6;
+        continue;
+      }
+
+      for (const proc of stage.procedures) {
+        if (y > 270) {
+          pdf.addPage();
+          y = 20;
+        }
+
+        const name = proc.name || "Процедура";
+        const comment = proc.comment?.trim() ? `${proc.comment}` : "";
+
+        const textLines = [name];
+        if (comment) textLines.push("• " + comment);
+
+        const split = pdf.splitTextToSize(textLines.join("\n"), pageWidth - 28);
+        pdf.text(split, 20, y);
+        y += split.length * 5 + 3;
+      }
+    }
+
+    pdf.setFont("Noah", "italic");
+    pdf.setFontSize(10);
+    y += 10;
+  }
+  // --- Протокол процедур (без етапів) ---
+  if (procedures.length > 0) {
+    addSection(
+      "Рекомендації щодо процедур",
+      procedures.map((p) => `${p.name}\n· ${p.recommendation}`)
+    );
+  }
+
+  // --- Інформація ---
   if (additionalInfo?.trim()) {
     addSection("Все, що необхідно знати про ваш стан", [additionalInfo]);
   }
@@ -242,6 +308,7 @@ export const generateReportPDF = async ({
     addSection("Додаткова інформація", [comments]);
   }
 
+  // --- Нумерація сторінок ---
   const totalPages = pdf.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     pdf.setPage(i);

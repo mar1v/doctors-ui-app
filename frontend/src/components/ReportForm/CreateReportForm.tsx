@@ -11,8 +11,6 @@ import SearchExam from "#components/Exams/SearchExam";
 import SelectedExamsTable from "#components/Exams/SelectedExamsTable";
 import SearchHomeCare from "#components/HomeCare/SearchHomeCare";
 import SelectedHomeCaresTable from "#components/HomeCare/SelectedHomeCaresTable";
-import SearchProcedure from "#components/Procedures/SearchProcedure";
-import SelectedProceduresTable from "#components/Procedures/SelectedProceduresTable";
 import SearchSpecialist from "#components/Specialists/SearchSpecialist";
 import SelectedSpecialistsTable from "#components/Specialists/SelectedSpecialistsTable";
 
@@ -22,11 +20,18 @@ import type { IMedication } from "#api/medicationsApi";
 import type { IProcedure } from "#api/proceduresApi";
 import type { ISpecialist } from "#api/specialistsApi";
 
+import SearchProcedure from "#components/Procedures/SearchProcedure";
 import { generateReportPDF } from "#components/ReportForm/pdf/generateReportPDF";
 import ReportActions from "#components/ReportForm/ReportActions";
 import ReportComments from "#components/ReportForm/ReportComments";
 import ReportSection from "#components/ReportForm/ReportSection";
 import toast from "react-hot-toast";
+
+interface IProcedureStage {
+  id: string;
+  title: string;
+  procedures: (IProcedure & { comment?: string })[];
+}
 
 const CreateReportForm: React.FC = () => {
   const { patientId } = useParams();
@@ -37,17 +42,14 @@ const CreateReportForm: React.FC = () => {
   const [selectedMedications, setSelectedMedications] = useState<IMedication[]>(
     []
   );
-  const [selectedProcedures, setSelectedProcedures] = useState<IProcedure[]>(
-    []
-  );
   const [selectedSpecialists, setSelectedSpecialists] = useState<ISpecialist[]>(
     []
   );
   const [selectedHomeCares, setSelectedHomeCares] = useState<IHomeCare[]>([]);
+  const [procedureStages, setProcedureStages] = useState<IProcedureStage[]>([]);
 
   const [comments, setComments] = useState("");
   const [loading, setLoading] = useState(true);
-
   const [additionalInfo, setAdditionalInfo] = useState("");
 
   useEffect(() => {
@@ -64,22 +66,100 @@ const CreateReportForm: React.FC = () => {
           setReportId(reportData._id ?? null);
           setSelectedExams(reportData.exams ?? []);
           setSelectedMedications(reportData.medications ?? []);
-          setSelectedProcedures(reportData.procedures ?? []);
           setSelectedSpecialists(reportData.specialists ?? []);
           setSelectedHomeCares(reportData.homeCares ?? []);
           setAdditionalInfo(reportData.additionalInfo ?? "");
           setComments(reportData.comments ?? "");
 
-          setAdditionalInfo(reportData.additionalInfo ?? "");
+          // --- Типи для процедур ---
+          interface ReportProcedure {
+            _id?: string;
+            name: string;
+            recommendation?: string;
+            comment?: string;
+            stage?: string;
+          }
+
+          interface ReportProcedureStage {
+            stage: string;
+            procedures: ReportProcedure[];
+          }
+
+          // --- Новий формат ---
+          if (
+            Array.isArray(reportData.procedureStages) &&
+            reportData.procedureStages.length > 0
+          ) {
+            const stages = (
+              reportData.procedureStages as ReportProcedureStage[]
+            ).map((s) => ({
+              id: crypto.randomUUID(),
+              title: s.stage,
+              procedures: (s.procedures ?? []) as (IProcedure & {
+                comment?: string;
+              })[],
+            }));
+            setProcedureStages(stages);
+          }
+
+          // --- Старий формат ---
+          else if (
+            Array.isArray(reportData.procedures) &&
+            reportData.procedures.length > 0
+          ) {
+            const grouped = (reportData.procedures as ReportProcedure[]).reduce(
+              (acc, proc) => {
+                const stageName = proc.stage || "Етап 1";
+                if (!acc[stageName]) acc[stageName] = [];
+                acc[stageName].push(proc);
+                return acc;
+              },
+              {} as Record<string, ReportProcedure[]>
+            );
+
+            const stages = Object.entries(grouped).map(
+              ([stageName, procs]) => ({
+                id: crypto.randomUUID(),
+                title: stageName,
+                procedures: procs as (IProcedure & { comment?: string })[],
+              })
+            );
+
+            setProcedureStages(stages);
+          }
+
+          // --- Якщо процедур немає ---
+          else {
+            setProcedureStages([]);
+          }
         }
       } catch {
-        toast.error("Не вдалося завантажити дані. Спробуйте ще раз.");
+        toast.error("Не вдалося завантажити дані пацієнта або звіту.");
       } finally {
         setLoading(false);
       }
     };
     fetchData();
   }, [patientId]);
+
+  const addStage = () => {
+    setProcedureStages((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        title: `Етап ${prev.length + 1}`,
+        procedures: [],
+      },
+    ]);
+  };
+
+  const updateStage = (id: string, updated: IProcedureStage) => {
+    setProcedureStages((prev) => prev.map((s) => (s.id === id ? updated : s)));
+  };
+
+  const removeStage = (id: string) => {
+    setProcedureStages((prev) => prev.filter((s) => s.id !== id));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,10 +175,6 @@ const CreateReportForm: React.FC = () => {
         name: m.name,
         recommendation: m.recommendation,
       })),
-      procedures: selectedProcedures.map((p) => ({
-        name: p.name,
-        recommendation: p.recommendation,
-      })),
       specialists: selectedSpecialists.map((s) => ({
         name: s.name,
         query: s.query,
@@ -109,6 +185,24 @@ const CreateReportForm: React.FC = () => {
         evening: h.evening,
         medicationName: h.medicationName || "Засіб",
       })),
+      // --- Новий формат ---
+      procedureStages: procedureStages.map((s) => ({
+        stage: s.title,
+        procedures: s.procedures.map((p) => ({
+          name: p.name,
+          comment: p.comment,
+          recommendation: p.recommendation,
+        })),
+      })),
+      // --- Старий формат для сумісності ---
+      procedures: procedureStages.flatMap((s) =>
+        s.procedures.map((p) => ({
+          name: p.name,
+          comment: p.comment,
+          recommendation: p.recommendation,
+          stage: s.title,
+        }))
+      ),
       comments,
       additionalInfo,
     };
@@ -154,6 +248,7 @@ const CreateReportForm: React.FC = () => {
             </h2>
 
             <div className="space-y-3">
+              {/* --- Обстеження --- */}
               <ReportSection title="Обстеження">
                 <SearchExam
                   selectedExams={selectedExams}
@@ -166,17 +261,139 @@ const CreateReportForm: React.FC = () => {
                 />
               </ReportSection>
 
+              {/* --- Етапи процедур --- */}
               <ReportSection title="Процедури">
-                <SearchProcedure
-                  selectedProcedures={selectedProcedures}
-                  setSelectedProcedures={setSelectedProcedures}
-                />
-                <SelectedProceduresTable
-                  selectedProcedures={selectedProcedures}
-                  setSelectedProcedures={setSelectedProcedures}
-                />
+                {procedureStages.map((stage) => (
+                  <div
+                    key={stage.id}
+                    className="border border-green-200 rounded-lg p-3 mb-3 bg-green-50/40"
+                  >
+                    <div className="flex justify-between items-center mb-2">
+                      <input
+                        type="text"
+                        value={stage.title}
+                        onChange={(e) =>
+                          updateStage(stage.id, {
+                            ...stage,
+                            title: e.target.value,
+                          })
+                        }
+                        className="border border-green-300 rounded px-2 py-1 text-sm w-1/2"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeStage(stage.id)}
+                        className="text-red-600 text-sm hover:underline"
+                      >
+                        Видалити етап
+                      </button>
+                    </div>
+
+                    <SearchProcedure
+                      selectedProcedures={stage.procedures as IProcedure[]}
+                      setSelectedProcedures={(updated) => {
+                        if (typeof updated === "function") {
+                          // якщо SearchProcedure викликає функцію
+                          const newProcedures = updated(
+                            stage.procedures as IProcedure[]
+                          );
+                          updateStage(stage.id, {
+                            ...stage,
+                            procedures: newProcedures.map((p) => ({
+                              ...p,
+                              comment:
+                                stage.procedures.find((sp) => sp._id === p._id)
+                                  ?.comment || "",
+                            })),
+                          });
+                        } else {
+                          // якщо передано масив напряму
+                          updateStage(stage.id, {
+                            ...stage,
+                            procedures: updated.map((p) => ({
+                              ...p,
+                              comment:
+                                stage.procedures.find((sp) => sp._id === p._id)
+                                  ?.comment || "",
+                            })),
+                          });
+                        }
+                      }}
+                    />
+
+                    {stage.procedures.map((proc) => (
+                      <div
+                        key={proc._id}
+                        className="flex flex-col border border-green-200 rounded-md p-2 mt-2 bg-white"
+                      >
+                        <div className="flex justify-between items-center">
+                          <p className="font-medium text-sm">{proc.name}</p>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateStage(stage.id, {
+                                ...stage,
+                                procedures: stage.procedures.filter(
+                                  (p) => p._id !== proc._id
+                                ),
+                              })
+                            }
+                            className="text-red-500 hover:text-red-700 text-xl"
+                          >
+                            ×
+                          </button>
+                        </div>
+                        <textarea
+                          value={proc.comment || ""}
+                          onChange={(e) =>
+                            updateStage(stage.id, {
+                              ...stage,
+                              procedures: stage.procedures.map((p) =>
+                                p._id === proc._id
+                                  ? { ...p, comment: e.target.value }
+                                  : p
+                              ),
+                            })
+                          }
+                          placeholder="Коментар до процедури"
+                          className="w-full border border-green-200 rounded text-sm p-1 mt-1 resize-none"
+                          rows={2}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={addStage}
+                  className="text-green-600 text-sm mt-2 hover:underline"
+                >
+                  Додати етап
+                </button>
               </ReportSection>
 
+              {/* --- Рекомендації щодо процедур --- */}
+              {procedureStages.some((s) => s.procedures.length > 0) && (
+                <ReportSection title="Рекомендації щодо процедур">
+                  <ul className="list-disc list-inside text-sm text-gray-700">
+                    {[
+                      ...new Map(
+                        procedureStages
+                          .flatMap((s) => s.procedures)
+                          .map((p) => [p.name, p.recommendation])
+                      ).entries(),
+                    ].map(([name, rec]) => (
+                      <li key={name}>
+                        <strong>{name}:</strong>{" "}
+                        {rec || "Рекомендація відсутня"}
+                      </li>
+                    ))}
+                  </ul>
+                </ReportSection>
+              )}
+
+              {/* --- Спеціалісти --- */}
               <ReportSection title="Рекомендована консультація суміжного спеціаліста">
                 <SearchSpecialist
                   selectedSpecialists={selectedSpecialists}
@@ -188,6 +405,7 @@ const CreateReportForm: React.FC = () => {
                 />
               </ReportSection>
 
+              {/* --- Домашній догляд --- */}
               <ReportSection title="Домашній догляд">
                 <SearchHomeCare
                   selectedHomeCares={selectedHomeCares}
@@ -199,6 +417,7 @@ const CreateReportForm: React.FC = () => {
                 />
               </ReportSection>
 
+              {/* --- Додаткова інформація --- */}
               <ReportSection title="Все, що необхідно знати про ваш стан">
                 <textarea
                   value={additionalInfo}
@@ -209,8 +428,10 @@ const CreateReportForm: React.FC = () => {
                 />
               </ReportSection>
 
+              {/* --- Коментарі --- */}
               <ReportComments comments={comments} setComments={setComments} />
 
+              {/* --- Дії (збереження / експорт PDF) --- */}
               <ReportActions
                 reportId={reportId}
                 patient={patient}
@@ -219,7 +440,8 @@ const CreateReportForm: React.FC = () => {
                     patient,
                     exams: selectedExams,
                     medications: selectedMedications,
-                    procedures: selectedProcedures,
+                    procedures: procedureStages.flatMap((s) => s.procedures),
+                    procedureStages,
                     specialists: selectedSpecialists,
                     homeCares: selectedHomeCares,
                     comments,
