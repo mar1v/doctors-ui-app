@@ -71,7 +71,6 @@ const CreateReportForm: React.FC = () => {
           setAdditionalInfo(reportData.additionalInfo ?? "");
           setComments(reportData.comments ?? "");
 
-          // --- Типи для процедур ---
           interface ReportProcedure {
             _id?: string;
             name: string;
@@ -84,8 +83,6 @@ const CreateReportForm: React.FC = () => {
             stage: string;
             procedures: ReportProcedure[];
           }
-
-          // --- Новий формат ---
           if (
             Array.isArray(reportData.procedureStages) &&
             reportData.procedureStages.length > 0
@@ -100,10 +97,7 @@ const CreateReportForm: React.FC = () => {
               })[],
             }));
             setProcedureStages(stages);
-          }
-
-          // --- Старий формат ---
-          else if (
+          } else if (
             Array.isArray(reportData.procedures) &&
             reportData.procedures.length > 0
           ) {
@@ -126,10 +120,7 @@ const CreateReportForm: React.FC = () => {
             );
 
             setProcedureStages(stages);
-          }
-
-          // --- Якщо процедур немає ---
-          else {
+          } else {
             setProcedureStages([]);
           }
         }
@@ -185,7 +176,6 @@ const CreateReportForm: React.FC = () => {
         evening: h.evening,
         medicationName: h.medicationName || "Засіб",
       })),
-      // --- Новий формат ---
       procedureStages: procedureStages.map((s) => ({
         stage: s.title,
         procedures: s.procedures.map((p) => ({
@@ -194,7 +184,6 @@ const CreateReportForm: React.FC = () => {
           recommendation: p.recommendation,
         })),
       })),
-      // --- Старий формат для сумісності ---
       procedures: procedureStages.flatMap((s) =>
         s.procedures.map((p) => ({
           name: p.name,
@@ -248,7 +237,6 @@ const CreateReportForm: React.FC = () => {
             </h2>
 
             <div className="space-y-3">
-              {/* --- Обстеження --- */}
               <ReportSection title="Обстеження">
                 <SearchExam
                   selectedExams={selectedExams}
@@ -261,7 +249,6 @@ const CreateReportForm: React.FC = () => {
                 />
               </ReportSection>
 
-              {/* --- Етапи процедур --- */}
               <ReportSection title="Процедури">
                 {procedureStages.map((stage) => (
                   <div
@@ -293,7 +280,6 @@ const CreateReportForm: React.FC = () => {
                       selectedProcedures={stage.procedures as IProcedure[]}
                       setSelectedProcedures={(updated) => {
                         if (typeof updated === "function") {
-                          // якщо SearchProcedure викликає функцію
                           const newProcedures = updated(
                             stage.procedures as IProcedure[]
                           );
@@ -307,7 +293,6 @@ const CreateReportForm: React.FC = () => {
                             })),
                           });
                         } else {
-                          // якщо передано масив напряму
                           updateStage(stage.id, {
                             ...stage,
                             procedures: updated.map((p) => ({
@@ -373,7 +358,6 @@ const CreateReportForm: React.FC = () => {
                 </button>
               </ReportSection>
 
-              {/* --- Рекомендації щодо процедур --- */}
               {procedureStages.some((s) => s.procedures.length > 0) && (
                 <ReportSection title="Рекомендації щодо процедур">
                   <ul className="list-disc list-inside text-sm text-gray-700">
@@ -393,7 +377,6 @@ const CreateReportForm: React.FC = () => {
                 </ReportSection>
               )}
 
-              {/* --- Спеціалісти --- */}
               <ReportSection title="Рекомендована консультація суміжного спеціаліста">
                 <SearchSpecialist
                   selectedSpecialists={selectedSpecialists}
@@ -405,7 +388,6 @@ const CreateReportForm: React.FC = () => {
                 />
               </ReportSection>
 
-              {/* --- Домашній догляд --- */}
               <ReportSection title="Домашній догляд">
                 <SearchHomeCare
                   selectedHomeCares={selectedHomeCares}
@@ -417,7 +399,6 @@ const CreateReportForm: React.FC = () => {
                 />
               </ReportSection>
 
-              {/* --- Додаткова інформація --- */}
               <ReportSection title="Все, що необхідно знати про ваш стан">
                 <textarea
                   value={additionalInfo}
@@ -428,10 +409,8 @@ const CreateReportForm: React.FC = () => {
                 />
               </ReportSection>
 
-              {/* --- Коментарі --- */}
               <ReportComments comments={comments} setComments={setComments} />
 
-              {/* --- Дії (збереження / експорт PDF) --- */}
               <ReportActions
                 reportId={reportId}
                 patient={patient}

@@ -71,7 +71,6 @@ export const generateReportPDF = async ({
   const pageWidth = pdf.internal.pageSize.getWidth();
   let y = 20;
 
-  // --- Логотип ---
   try {
     const logoRes = await fetch(logoUrl);
     const logoBlob = await logoRes.blob();
@@ -94,12 +93,10 @@ export const generateReportPDF = async ({
   pdf.setFontSize(13);
   pdf.text("Рекомендаційний лист", pageWidth / 2, y, { align: "center" });
 
-  // Пацієнт: (bold)
   pdf.setFont("Noah", "bold");
   pdf.setFontSize(12);
   pdf.text("Пацієнт: ", 14, y + 7);
 
-  // patient.fullName (normal)
   pdf.setFont("Noah", "normal");
   pdf.setFontSize(12);
   pdf.text(patient.fullName || "", 30, y + 7);
