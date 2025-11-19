@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface CRUDItem {
   _id?: string;
@@ -9,19 +9,21 @@ interface CRUDItem {
   evening?: boolean;
 }
 
-interface Props {
+interface Props<T> {
   title: string;
   apiPath: string;
   hasRecommendation?: boolean;
   hasMorningEvening?: boolean;
+  mapItem?: (item: T) => CRUDItem;
 }
 
-const CRUDManager: React.FC<Props> = ({
+const CRUDManager = <T,>({
   title,
   apiPath,
   hasRecommendation,
   hasMorningEvening,
-}) => {
+  mapItem,
+}: Props<T>) => {
   const [list, setList] = useState<CRUDItem[]>([]);
   const [form, setForm] = useState<CRUDItem>({
     name: "",
@@ -33,10 +35,21 @@ const CRUDManager: React.FC<Props> = ({
   const textRef = useRef<HTMLTextAreaElement | null>(null);
 
   const fetchList = async () => {
-    const { data } = await axios.get(
+    const { data } = await axios.get<T[]>(
       `${import.meta.env.VITE_API_URL}/${apiPath}`
     );
-    setList(data);
+
+    let raw = data;
+
+    if (!Array.isArray(raw)) {
+      const foundArray = Object.values(raw).find((v) => Array.isArray(v));
+      if (foundArray) raw = foundArray;
+    }
+
+    const finalList = mapItem ? (raw as T[]).map(mapItem) : (raw as CRUDItem[]);
+    console.log("RAW DATA:", data);
+
+    setList(finalList);
   };
 
   useEffect(() => {
@@ -62,11 +75,13 @@ const CRUDManager: React.FC<Props> = ({
     } else {
       await axios.post(`${import.meta.env.VITE_API_URL}/${apiPath}`, form);
     }
+
     setForm({ name: "", recommendation: "", morning: false, evening: false });
     fetchList();
   };
 
   const handleDelete = async (id?: string) => {
+    if (!confirm("Ви впевнені, що хочете видалити цей елемент?")) return;
     if (!id) return;
     await axios.delete(`${import.meta.env.VITE_API_URL}/${apiPath}/${id}`);
     fetchList();

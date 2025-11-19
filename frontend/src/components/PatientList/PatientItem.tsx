@@ -15,6 +15,7 @@ const PatientItem: React.FC<{ patient: IPatient }> = ({ patient }) => {
         exams: report.exams || [],
         medications: report.medications || [],
         procedures: report.procedures || [],
+        procedureStages: report.procedureStages || [],
         specialists: report.specialists || [],
         homeCares: report.homeCares || [],
         additionalInfo: report.additionalInfo || "",

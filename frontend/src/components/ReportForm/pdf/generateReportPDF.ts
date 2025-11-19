@@ -69,7 +69,7 @@ export const generateReportPDF = async ({
   pdf.setTextColor(0, 0, 0);
 
   const pageWidth = pdf.internal.pageSize.getWidth();
-  let y = 20;
+  let y = 15;
 
   try {
     const logoRes = await fetch(logoUrl);
@@ -79,19 +79,23 @@ export const generateReportPDF = async ({
       reader.onloadend = () => resolve(reader.result as string);
       reader.readAsDataURL(logoBlob);
     });
-    const logoWidth = 25;
-    const logoHeight = 15;
+
+    const logoWidth = 28;
+    const logoHeight = 17;
     const logoX = (pageWidth - logoWidth) / 2;
-    pdf.addImage(logoBase64, "PNG", logoX, y - 8, logoWidth, logoHeight);
+
+    pdf.addImage(logoBase64, "PNG", logoX, y, logoWidth, logoHeight);
   } catch {
-    toast.error("Не вдалося завантажити логотип для PDF");
+    toast.error("Не вдалося завантажити логотип для PDF.");
   }
 
-  y += 25;
+  y += 28;
 
   pdf.setFont("Noah", "bold");
-  pdf.setFontSize(13);
-  pdf.text("Рекомендаційний лист", pageWidth / 2, y, { align: "center" });
+  pdf.setFontSize(14);
+  pdf.text("РЕКОМЕНДАЦІЙНИЙ ЛИСТ", pageWidth / 2, y, { align: "center" });
+
+  y += 12;
 
   pdf.setFont("Noah", "bold");
   pdf.setFontSize(12);
@@ -123,7 +127,7 @@ export const generateReportPDF = async ({
       const split = pdf.splitTextToSize(line, pageWidth - 28);
       pdf.text(split, 18, y);
       y += split.length * 6;
-      if (y > 270) {
+      if (y > 285) {
         pdf.addPage();
         y = 20;
       }
@@ -131,7 +135,6 @@ export const generateReportPDF = async ({
     y += 6;
   };
 
-  // --- Спеціалісти ---
   if (specialists.length > 0) {
     addSection(
       "Рекомендована консультація суміжного спеціаліста",
@@ -139,7 +142,6 @@ export const generateReportPDF = async ({
     );
   }
 
-  // --- Обстеження ---
   if (exams.length > 0) {
     addSection(
       "Рекомендовані обстеження",
@@ -147,7 +149,6 @@ export const generateReportPDF = async ({
     );
   }
 
-  // --- Домашній догляд ---
   if (homeCares.length > 0) {
     pdf.setFont("Noah", "bold");
     pdf.setFontSize(12);
@@ -172,9 +173,10 @@ export const generateReportPDF = async ({
         .trim() || "";
 
     const colX = {
-      product: 22,
-      morning: pageWidth / 2 + 10,
-      evening: pageWidth - 30,
+      product: 20,
+      morning: pageWidth - 44,
+      evening: pageWidth - 26,
+      price: pageWidth - 14,
     };
 
     for (const category of uniqueCategories) {
@@ -197,6 +199,7 @@ export const generateReportPDF = async ({
       pdf.setFontSize(10);
       pdf.text("День", colX.morning, y);
       pdf.text("Ніч", colX.evening, y);
+      pdf.text("Ціна", colX.price, y);
       y += 7;
 
       for (const h of items) {
@@ -215,20 +218,23 @@ export const generateReportPDF = async ({
         const recommendation =
           found?.recommendation || "Рекомендацію не знайдено";
         const text = `${h.medicationName || "—"}\n· ${recommendation}`;
-        const split = pdf.splitTextToSize(text, pageWidth / 2 - 40);
+        const split = pdf.splitTextToSize(text, colX.morning - 30);
 
         pdf.setFont("Noah", "normal");
         pdf.setFontSize(10);
-        pdf.text(split, colX.product - 8, y);
+        pdf.text(split, colX.product, y);
 
-        const lineHeight = split.length * 5;
-        const rectY = y - 3.5;
-
+        const lineHeight = split.length * 4;
+        const rectY = y - 3;
         if (h.morning) pdf.rect(colX.morning, rectY, 4, 4, "F");
         else pdf.rect(colX.morning, rectY, 4, 4);
 
         if (h.evening) pdf.rect(colX.evening, rectY, 4, 4, "F");
         else pdf.rect(colX.evening, rectY, 4, 4);
+
+        pdf.setFont("Noah", "normal");
+        pdf.setFontSize(10);
+        pdf.line(colX.price, y, colX.price + 8, y);
 
         y += lineHeight + 3;
       }
@@ -237,7 +243,6 @@ export const generateReportPDF = async ({
     }
   }
 
-  // --- Протокол процедур (етапи) ---
   if (procedureStages && procedureStages.length > 0) {
     pdf.setFont("Noah", "bold");
     pdf.setFontSize(12);
@@ -250,13 +255,11 @@ export const generateReportPDF = async ({
         y = 20;
       }
 
-      // Назва етапу
       pdf.setFont("Noah", "bold");
       pdf.setFontSize(11);
       pdf.text(`${stage.title || `Етап ${i + 1}`}`, 16, y);
       y += 5;
 
-      // Список процедур
       pdf.setFont("Noah", "normal");
       pdf.setFontSize(10);
 
@@ -266,7 +269,7 @@ export const generateReportPDF = async ({
         continue;
       }
 
-      for (const proc of stage.procedures) {
+      for (const [idx, proc] of stage.procedures.entries()) {
         if (y > 270) {
           pdf.addPage();
           y = 20;
@@ -274,13 +277,14 @@ export const generateReportPDF = async ({
 
         const name = proc.name || "Процедура";
         const comment = proc.comment?.trim() ? `${proc.comment}` : "";
-
-        const textLines = [name];
+        let text = name;
+        if (idx > 0) text = "+ " + text;
+        const textLines = [text];
         if (comment) textLines.push("• " + comment);
 
         const split = pdf.splitTextToSize(textLines.join("\n"), pageWidth - 28);
         pdf.text(split, 20, y);
-        y += split.length * 5 + 3;
+        y += split.length * 4 + 1;
       }
     }
 
@@ -288,7 +292,7 @@ export const generateReportPDF = async ({
     pdf.setFontSize(10);
     y += 10;
   }
-  // --- Протокол процедур (без етапів) ---
+
   if (procedures.length > 0) {
     addSection(
       "Рекомендації щодо процедур",
@@ -296,26 +300,12 @@ export const generateReportPDF = async ({
     );
   }
 
-  // --- Інформація ---
   if (additionalInfo?.trim()) {
     addSection("Все, що необхідно знати про ваш стан", [additionalInfo]);
   }
 
   if (comments?.trim()) {
     addSection("Додаткова інформація", [comments]);
-  }
-
-  // --- Нумерація сторінок ---
-  const totalPages = pdf.getNumberOfPages();
-  for (let i = 1; i <= totalPages; i++) {
-    pdf.setPage(i);
-    pdf.setFont("Noah", "normal");
-    pdf.setFontSize(10);
-    pdf.text(
-      `Сторінка ${i} з ${totalPages}`,
-      pageWidth - 32,
-      pdf.internal.pageSize.getHeight() - 10
-    );
   }
 
   pdf.save(

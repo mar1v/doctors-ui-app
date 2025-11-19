@@ -1,18 +1,30 @@
 import ExamsManager from "#components/Exams/ExamsManager";
 import HomeCaresManager from "#components/HomeCare/HomeCaresManager";
 import MedicationsManager from "#components/Medications/MedicationsManager";
+import PatientManager from "#components/PatientList/PatientManager";
 import ProceduresManager from "#components/Procedures/ProceduresManager";
 import SpecialistsManager from "#components/Specialists/SpecialistsManager";
 import React, { useState } from "react";
 
 interface ReferencePanelProps {
-  key: "medications" | "procedures" | "exams" | "specialists" | "homecares";
+  key:
+    | "medications"
+    | "procedures"
+    | "exams"
+    | "specialists"
+    | "homecares"
+    | "patients";
   label: string;
 }
 
 const ReferencePanel: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
-    "medications" | "procedures" | "exams" | "specialists" | "homecares"
+    | "medications"
+    | "procedures"
+    | "exams"
+    | "specialists"
+    | "homecares"
+    | "patients"
   >("medications");
 
   const tabs: ReferencePanelProps[] = [
@@ -21,6 +33,7 @@ const ReferencePanel: React.FC = () => {
     { key: "exams", label: "Обстеження" },
     { key: "specialists", label: "Суміжні спеціалісти" },
     { key: "homecares", label: "Домашній догляд" },
+    { key: "patients", label: "Пацієнти" },
   ];
 
   return (
@@ -71,6 +84,7 @@ const ReferencePanel: React.FC = () => {
         {activeTab === "exams" && <ExamsManager />}
         {activeTab === "specialists" && <SpecialistsManager />}
         {activeTab === "homecares" && <HomeCaresManager />}
+        {activeTab === "patients" && <PatientManager />}
       </div>
     </div>
   );

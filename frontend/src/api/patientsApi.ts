@@ -31,3 +31,7 @@ export const createPatient = async (patient: IPatient) =>
 
 export const updatePatient = async (id: string, patient: IPatient) =>
   (await axios.put<IPatient>(`${API_URL}/${id}`, patient)).data;
+
+export const deletePatient = async (id: string) => {
+  await axios.delete(`${API_URL}/${id}`);
+};

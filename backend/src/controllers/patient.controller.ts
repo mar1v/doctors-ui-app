@@ -76,3 +76,17 @@ export const updatePatient = async (
     next(ApiError.internal("Помилка при оновленні пацієнта"));
   }
 };
+export const deletePatient = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const patient = await PatientService.remove(req.params.id);
+    if (!patient) return next(ApiError.notFound("Пацієнт не знайдено"));
+    res.status(204).send();
+  } catch (err) {
+    console.error(err);
+    next(ApiError.internal("Помилка при видаленні пацієнта"));
+  }
+};
