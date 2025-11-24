@@ -13,7 +13,7 @@ import { toast } from "react-hot-toast/headless";
 
 interface IProcedureStage {
   title: string;
-  procedures: (IProcedure & { comment?: string })[];
+  procedures: (IProcedure & { comment?: string; price?: number })[];
 }
 
 interface GenerateReportPDFParams {
@@ -249,6 +249,10 @@ export const generateReportPDF = async ({
     pdf.text("Протокол процедур:", 14, y);
     y += 8;
 
+    const priceColumnX = 60;
+    const priceLineWidth = 10;
+    const textBlockWidth = priceColumnX - 30;
+
     for (const [i, stage] of procedureStages.entries()) {
       if (y > 270) {
         pdf.addPage();
@@ -258,7 +262,12 @@ export const generateReportPDF = async ({
       pdf.setFont("Noah", "bold");
       pdf.setFontSize(11);
       pdf.text(`${stage.title || `Етап ${i + 1}`}`, 16, y);
-      y += 5;
+
+      pdf.setFont("Noah", "bold");
+      pdf.setFontSize(10);
+      pdf.text("Ціна", priceColumnX, y);
+
+      y += 6;
 
       pdf.setFont("Noah", "normal");
       pdf.setFontSize(10);
@@ -275,21 +284,24 @@ export const generateReportPDF = async ({
           y = 20;
         }
 
-        const name = proc.name || "Процедура";
-        const comment = proc.comment?.trim() ? `${proc.comment}` : "";
-        let text = name;
-        if (idx > 0) text = "+ " + text;
-        const textLines = [text];
-        if (comment) textLines.push("• " + comment);
+        const name = idx > 0 ? `+ ${proc.name}` : proc.name;
+        const comment = proc.comment?.trim() ? `• ${proc.comment}` : "";
 
-        const split = pdf.splitTextToSize(textLines.join("\n"), pageWidth - 28);
+        const lines = comment ? [name, comment] : [name];
+
+        const split = pdf.splitTextToSize(lines.join("\n"), textBlockWidth);
+
         pdf.text(split, 20, y);
-        y += split.length * 4 + 1;
+
+        const priceY = y + 1.2;
+        pdf.line(priceColumnX, priceY, priceColumnX + priceLineWidth, priceY);
+
+        y += split.length * 5 + 4;
       }
+
+      y += 5;
     }
 
-    pdf.setFont("Noah", "italic");
-    pdf.setFontSize(10);
     y += 10;
   }
 
@@ -307,7 +319,20 @@ export const generateReportPDF = async ({
   if (comments?.trim()) {
     addSection("Додаткова інформація", [comments]);
   }
+  {
+    const pageHeight = pdf.internal.pageSize.getHeight();
 
+    const labelX = pageWidth - 60;
+    const lineX = pageWidth - 60;
+    const lineWidth = 50;
+    const bottomY = pageHeight - 15;
+
+    pdf.setFont("Noah", "bold");
+    pdf.setFontSize(11);
+    pdf.text("Лікар", labelX - 10, bottomY);
+
+    pdf.line(lineX, bottomY, lineX + lineWidth, bottomY);
+  }
   pdf.save(
     `Рекомендаційний_лист_${
       patient.fullName?.replace(/\s+/g, "_") ?? "Пацієнт"

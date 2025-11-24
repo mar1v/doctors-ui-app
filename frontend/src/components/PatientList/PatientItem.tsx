@@ -1,6 +1,7 @@
 import type { IPatient } from "#api/patientsApi";
 import { getReportByPatientId } from "#api/reportsApi";
 import { generateReportPDF } from "#components/ReportForm/pdf/generateReportPDF";
+import { normalizeProcedureStages } from "#types/normalizeProcedureStages";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -10,12 +11,13 @@ const PatientItem: React.FC<{ patient: IPatient }> = ({ patient }) => {
   const handleExportPDF = async () => {
     try {
       const report = await getReportByPatientId(patient._id!);
+      const procedureStages = normalizeProcedureStages(report);
       await generateReportPDF({
         patient,
         exams: report.exams || [],
         medications: report.medications || [],
         procedures: report.procedures || [],
-        procedureStages: report.procedureStages || [],
+        procedureStages: procedureStages,
         specialists: report.specialists || [],
         homeCares: report.homeCares || [],
         additionalInfo: report.additionalInfo || "",
